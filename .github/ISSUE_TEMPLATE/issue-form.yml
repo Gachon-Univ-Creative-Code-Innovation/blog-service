@@ -12,6 +12,19 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: branchType
+    attributes:
+      label: '📂 브랜치 타입'
+      description: '기능 타입을 선택하세요'
+      options:
+        - feat
+        - hotfix
+        - refactor
+        - test
+    validations:
+      required: true
+
   - type: input
     id: branch
     attributes:

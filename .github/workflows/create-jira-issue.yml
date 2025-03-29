@@ -54,7 +54,9 @@ jobs:
       - name: 브랜치 생성 및 푸시
         run: |
           ISSUE_NUMBER="${{ steps.create.outputs.issue }}"
-          BRANCH_NAME="${ISSUE_NUMBER}-${{ steps.issue-parser.outputs.issueparser_branch }}"
+          BRANCH_TYPE="${{ steps.issue-parser.outputs.issueparser_branchType }}"
+          BRANCH_NAME_INPUT="${{ steps.issue-parser.outputs.issueparser_branch }}"
+          BRANCH_NAME="${BRANCH_TYPE}/${ISSUE_NUMBER}-${BRANCH_NAME_INPUT}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "${BRANCH_NAME}"
