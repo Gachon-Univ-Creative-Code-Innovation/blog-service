@@ -54,16 +54,20 @@ jobs:
             }
 
       - name: 브랜치 생성 및 푸시
+        env:
+          PAT: ${{ secrets.GH_PAT }}
         run: |
           ISSUE_NUMBER="${{ steps.create.outputs.issue }}"
           BRANCH_TYPE="${{ steps.issue-parser.outputs.issueparser_branchType }}"
           BRANCH_NAME_INPUT="${{ steps.issue-parser.outputs.issueparser_branch }}"
           SANITIZED_INPUT=$(echo "${BRANCH_NAME_INPUT}" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g' | sed 's/[^a-z0-9\\-]//g')
           BRANCH_NAME="${BRANCH_TYPE}/${ISSUE_NUMBER}-${SANITIZED_INPUT}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          
           git checkout -b "${BRANCH_NAME}"
-          git push origin "${BRANCH_NAME}"
+          git push "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git" "${BRANCH_NAME}"
 
       - name: GitHub 이슈 제목 업데이트
         uses: actions-cool/issues-helper@v3
