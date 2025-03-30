@@ -19,6 +19,7 @@ body:
       description: '기능 타입을 선택하세요'
       options:
         - feat
+        - fix
         - hotfix
         - refactor
         - test
