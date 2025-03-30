@@ -30,4 +30,4 @@ jobs:
         uses: atlassian/gajira-transition@v3
         with:
           issue: ${{ env.ISSUE_KEY }}
-          transition: "31"
+          transition: 완료
