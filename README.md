@@ -5,7 +5,7 @@
 
 ### 📂 브랜치 네이밍 규칙
 
-예시:
+예시: 
 - `feat/GUC-31-login-api`
 - `fix/GUC-27-comment-delete-bug`
 - `test/GUC-40-user-service-test`
