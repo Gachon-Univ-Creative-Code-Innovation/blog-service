@@ -20,7 +20,7 @@ jobs:
         uses: stefanbuck/github-issue-parser@v3
         id: issue-parser
         with:
-          template-path: .github/ISSUE_TEMPLATE/issue-form.yml
+          template-path: .github/issue-template/issue-form.yml
 
       - name: 마크다운 → Jira 문법 변환
         uses: peter-evans/jira2md@v1
