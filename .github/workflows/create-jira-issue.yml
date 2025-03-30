@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: main 브랜치 체크아웃
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
       - name: Jira 로그인
         uses: atlassian/gajira-login@v3
         env:
@@ -20,7 +25,7 @@ jobs:
         uses: stefanbuck/github-issue-parser@v3
         id: issue-parser
         with:
-          template-path: .github/issue-template/issue-form.yml
+          template-path: .github/ISSUE_TEMPLATE/issue-form.yml
 
       - name: 마크다운 → Jira 문법 변환
         uses: peter-evans/jira2md@v1
@@ -45,11 +50,6 @@ jobs:
             {
               "customfield_10014": "${{ steps.issue-parser.outputs.issueparser_parentKey }}"
             }
-
-      - name: main 브랜치 체크아웃
-        uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: 브랜치 생성 및 푸시
         run: |
