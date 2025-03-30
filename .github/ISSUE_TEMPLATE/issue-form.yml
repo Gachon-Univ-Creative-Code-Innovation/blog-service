@@ -1,13 +1,13 @@
 name: '이슈 생성'
-description: 'GitHub에서 이슈를 생성하면 Jira에 Story가 자동 생성되고, Epic에 연결됩니다.'
+description: 'GitHub에서 이슈를 생성하면 Jira에 Sub-task가 자동 생성되고, 상위 이슈에 연결됩니다.'
 labels: [feat]
 title: '이슈 이름을 작성해주세요'
 body:
   - type: input
     id: parentKey
     attributes:
-      label: '🎟️ 상위 Epic (Epic Ticket Number)'
-      description: '연결할 Epic의 Ticket Number를 입력해 주세요 (예: GUC-27)'
+      label: '🎟️ 상위 이슈 키'
+      description: '연결할 상위 이슈의 Ticket Number를 입력해 주세요 (예: GUC-27)'
       placeholder: 'GUC-00'
     validations:
       required: true
@@ -45,9 +45,9 @@ body:
     id: tasks
     attributes:
       label: '✅ 체크리스트(Tasks)'
-      description: '해당 이슈에 대해 필요한 작업 목록을 작성해 주세요'
+      description: '이 작업에서 수행해야 할 내용을 작성해 주세요'
       value: |
-        - [ ] Task1
-        - [ ] Task2
+        - [ ] 작업 항목 1
+        - [ ] 작업 항목 2
     validations:
       required: true
