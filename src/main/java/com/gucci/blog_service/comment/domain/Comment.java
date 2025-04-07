@@ -30,4 +30,8 @@ public class Comment extends BaseEntity { //todo: user연결하기
     @JoinColumn(name = "post_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }
