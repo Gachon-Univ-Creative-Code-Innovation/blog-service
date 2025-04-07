@@ -18,17 +18,20 @@ configurations {
 		extendsFrom annotationProcessor
 	}
 }
-
-repositories {
-	mavenCentral()
-}
+//
+//repositories {
+//	mavenCentral()
+//}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	runtimeOnly 'org.postgresql:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:v1.0.1'
 }
 
 tasks.named('test') {
