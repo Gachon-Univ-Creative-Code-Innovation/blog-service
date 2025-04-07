@@ -1,5 +1,6 @@
 package com.gucci.blog_service.comment.domain;
 
+import com.gucci.blog_service.config.common.BaseEntity;
 import com.gucci.blog_service.post.domain.Post;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,7 +13,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment { //todo: user연결하기
+public class Comment extends BaseEntity { //todo: user연결하기
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
