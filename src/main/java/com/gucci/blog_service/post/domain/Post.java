@@ -10,7 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
+public class Post { //todo: user연결하기
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long postId;

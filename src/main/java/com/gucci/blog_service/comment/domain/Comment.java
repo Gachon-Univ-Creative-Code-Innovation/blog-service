@@ -12,7 +12,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Comment { //todo: user연결하기
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
