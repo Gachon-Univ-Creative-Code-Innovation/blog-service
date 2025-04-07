@@ -36,4 +36,10 @@ public class CommentController {
         Comment comment = commentService.updateComment(commentId, updateComment);
         return ApiResponse.success(comment.getCommentId() + " 댓글 정상적으로 업데이트를 완료했습니다");
     }
+
+    @DeleteMapping("comments/")
+    public ApiResponse<String> deleteComments(@RequestParam(name="commentId") Long commentId) {
+        commentService.deleteComment(commentId);
+        return ApiResponse.success("일정 삭제 완료");
+    }
 }
