@@ -12,8 +12,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -57,8 +55,14 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //commentId에 해당하는 댓글이 없음
         );
-
         comment.updateContent(updateComment.getContent());
         return comment;
+    }
+
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomException(ErrorCode.INVALID_ARGUMENT)
+        );
+        commentRepository.delete(comment);
     }
 }
