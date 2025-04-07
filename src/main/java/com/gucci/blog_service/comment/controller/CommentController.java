@@ -2,10 +2,13 @@ package com.gucci.blog_service.comment.controller;
 
 import com.gucci.blog_service.comment.domain.Comment;
 import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
+import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.service.CommentService;
 import com.gucci.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +23,9 @@ public class CommentController {
     }
 
     @GetMapping("comments/")
-    public ApiResponse<> getComment(@RequestParam(name = "postId") Long postId){
-
-
+    public ApiResponse<List<CommentResponseDTO.GetComments>> getComments(@RequestParam(name = "postId") Long postId){
+        List<CommentResponseDTO.GetComments> getComments = commentService.getCommentsByPostId(postId);
+        return ApiResponse.success(getComments);
     }
 
 
