@@ -28,5 +28,12 @@ public class CommentController {
         return ApiResponse.success(getComments);
     }
 
-
+    @PatchMapping("comments/")
+    public ApiResponse<String> modifyComments(
+            @RequestParam(name="commentId") Long commentId,
+            @RequestBody CommentRequestDTO.UpdateComment updateComment
+    ) {
+        Comment comment = commentService.updateComment(commentId, updateComment);
+        return ApiResponse.success(comment.getCommentId() + " 댓글 정상적으로 업데이트를 완료했습니다");
+    }
 }

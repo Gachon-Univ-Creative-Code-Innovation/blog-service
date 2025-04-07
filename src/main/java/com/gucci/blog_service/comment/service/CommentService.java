@@ -6,9 +6,13 @@ import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.repository.CommentRepository;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.service.PostService;
+import com.gucci.common.exception.CustomException;
+import com.gucci.common.exception.ErrorCode;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +37,7 @@ public class CommentService {
 
     public List<CommentResponseDTO.GetComments> getCommentsByPostId(Long postId) {
         Post post = postService.getPostById(postId);
-        List<Comment> comments = commentRepository.findAllByPost(post).orElse(null);
-
-        assert comments != null;
+        List<Comment> comments = commentRepository.findAllByPost(post);
 
         return comments.stream().map(
                 comment -> CommentResponseDTO.GetComments.builder()
@@ -43,10 +45,20 @@ public class CommentService {
                         .commentId(comment.getCommentId())
                         .authorNickname("임시")
                         .authorId(0L)
-                        .createTime()
-                        .updateTime()
+                        .createTime(comment.getCreatedAt())
+                        .updateTime(comment.getCreatedAt())
                         .content(comment.getContent())
                         .build()
         ).toList();
+    }
+
+    @Transactional //JPA 영속성 컨텍스트라면 변경된 필드만 감지해서 업데이트 해준다
+    public Comment updateComment(Long commentId, CommentRequestDTO.UpdateComment updateComment) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //commentId에 해당하는 댓글이 없음
+        );
+
+        comment.updateContent(updateComment.getContent());
+        return comment;
     }
 }

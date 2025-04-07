@@ -10,4 +10,9 @@ public class CommentRequestDTO {
         Long parentCommentId;
         String content;
     }
+
+    @Getter
+    public static class UpdateComment{
+        String content;
+    }
 }
