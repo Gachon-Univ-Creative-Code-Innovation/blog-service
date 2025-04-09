@@ -13,3 +13,7 @@ spring:
       hibernate:
         format_sql: true  # SQL 로그 보기 좋게 포맷
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+jwt:
+  secret: ${JWT_SECRET}

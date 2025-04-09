@@ -27,6 +27,8 @@ public class Comment extends BaseEntity { //todo: user연결하기
 
     private Boolean isDeleted = false;
 
+    private Long userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
@@ -34,18 +36,20 @@ public class Comment extends BaseEntity { //todo: user연결하기
     @OneToMany(mappedBy = "parentComment")
     private List<Comment> childComments = new ArrayList<>();
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
-    public void updateContent(String content) {
+
+
+    public void updateContent(String content){
         this.content = content;
     }
 
     public void setDeleted(){
         this.isDeleted = true;
         this.content = "삭제된 댓글입니다.";
+        this.userId = null;
     }
 }
