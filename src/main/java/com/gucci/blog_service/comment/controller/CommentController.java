@@ -25,24 +25,28 @@ public class CommentController {
         return ApiResponse.success(comment.getCommentId()+" 댓글이 정상적으로 생성되었습니다");
     }
 
-    @GetMapping("")
-    public ApiResponse<List<CommentResponseDTO.GetComments>> getComments(@RequestParam(name = "postId") Long postId){
+    @GetMapping("/{postId}")
+    public ApiResponse<List<CommentResponseDTO.GetComments>> getComments(
+            @PathVariable Long postId){
         List<CommentResponseDTO.GetComments> getComments = commentService.getCommentsByPostId(postId);
         return ApiResponse.success(getComments);
     }
 
-    @PatchMapping("")
+    @PatchMapping("/{commentId}")
     public ApiResponse<String> modifyComments(
-            @RequestParam(name="commentId") Long commentId,
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long commentId,
             @RequestBody CommentRequestDTO.UpdateComment updateComment
     ) {
-        Comment comment = commentService.updateComment(commentId, updateComment);
+        Comment comment = commentService.updateComment(commentId, updateComment, token);
         return ApiResponse.success(comment.getCommentId() + " 댓글 정상적으로 업데이트를 완료했습니다");
     }
 
-    @DeleteMapping("")
-    public ApiResponse<String> deleteComments(@RequestParam(name="commentId") Long commentId) {
-        commentService.deleteComment(commentId);
-        return ApiResponse.success("일정 삭제 완료");
+    @DeleteMapping("/{commentId}")
+    public ApiResponse<String> deleteComments(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long commentId) {
+        commentService.deleteComment(commentId, token);
+        return ApiResponse.success("댓글 삭제 완료");
     }
 }
