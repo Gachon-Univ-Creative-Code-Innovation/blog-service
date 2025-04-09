@@ -30,13 +30,17 @@ public class CommentService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Post post = postService.getPostById(createComment.getPostId());
-        Comment parentComment = commentRepository.findById(createComment.getParentCommentId()).orElse(null);
+        Comment parentComment = null;
+        if (createComment.getParentCommentId() != null) {
+            parentComment = commentRepository.findById(createComment.getParentCommentId()).orElse(null);
+        }
 
         Comment newComment = Comment.builder()
                 .userId(userId)
                 .post(post)
                 .content(createComment.getContent())
                 .parentComment(parentComment)
+                .isDeleted(false)
                 .build();
 
         return commentRepository.save(newComment);
@@ -71,7 +75,7 @@ public class CommentService {
                 .createTime(comment.getCreatedAt())
                 .updateTime(comment.getUpdatedAt())
                 .authorNickname(comment.getUserId() == null ? null : "임시") //user-service와 통신해야함
-                .authorId(0L)
+                .authorId(comment.getUserId())
                 .depth(depth)
                 .isDeleted(comment.getIsDeleted())
                 .build();
@@ -90,18 +94,32 @@ public class CommentService {
 
 
     @Transactional //JPA 영속성 컨텍스트라면 변경된 필드만 감지해서 업데이트 해준다
-    public Comment updateComment(Long commentId, CommentRequestDTO.UpdateComment updateComment) {
+    public Comment updateComment(Long commentId, CommentRequestDTO.UpdateComment updateComment, String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT)); //commentId에 해당하는 댓글이 없음
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT)); //todo : NOT_FOUND_COMMNET commentId에 해당하는 댓글이 없음
+
+        //권한체크
+        if (!comment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT); //todo : NO_PERMISSION
+        }
 
         comment.updateContent(updateComment.getContent());
         return comment;
     }
 
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT));//todo : NO_PERMISSION
+
+        //권한체크
+        if (!comment.getUserId().equals(userId) && !comment.getPost().getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT);
+        }
 
         comment.setDeleted();
     }

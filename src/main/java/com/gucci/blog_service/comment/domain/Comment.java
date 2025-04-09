@@ -25,6 +25,7 @@ public class Comment extends BaseEntity { //todo: user연결하기
     @Column(columnDefinition="text", nullable=false)
     private String content;
 
+    @Column(columnDefinition="boolean default false")
     private Boolean isDeleted = false;
 
     private Long userId;

@@ -17,11 +17,13 @@ public class Post extends BaseEntity { //todo: user연결하기
     private Long postId;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private String title;
 
     private Long documentId;
 
-    @ColumnDefault("0")
-    @Column(nullable = false)
-    private Long view;
+    @Column(columnDefinition = "bigint default 0", nullable = false)
+    private Long view = 0L;
 }
