@@ -18,13 +18,9 @@ public class CommentResponseDTO {
         String authorNickname;
         String content;
         Integer depth;
+        Boolean isDeleted;
         LocalDateTime createTime;
         LocalDateTime updateTime;
     }
 
-    @Getter
-    @Builder
-    public static class Comments{
-
-    }
 }
