@@ -67,6 +67,7 @@ public class CommentService {
                 .authorNickname("임시")
                 .authorId(0L)
                 .depth(depth)
+                .isDeleted(comment.getIsDeleted())
                 .build();
 
         result.add(dto);
@@ -81,19 +82,21 @@ public class CommentService {
         }
     }
 
+
     @Transactional //JPA 영속성 컨텍스트라면 변경된 필드만 감지해서 업데이트 해준다
     public Comment updateComment(Long commentId, CommentRequestDTO.UpdateComment updateComment) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //commentId에 해당하는 댓글이 없음
-        );
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT)); //commentId에 해당하는 댓글이 없음
+
         comment.updateContent(updateComment.getContent());
         return comment;
     }
 
+    @Transactional
     public void deleteComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomException(ErrorCode.INVALID_ARGUMENT)
-        );
-        commentRepository.delete(comment);
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT));
+
+        comment.setDeleted();
     }
 }

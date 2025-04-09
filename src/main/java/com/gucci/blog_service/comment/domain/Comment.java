@@ -4,6 +4,7 @@ import com.gucci.blog_service.config.common.BaseEntity;
 import com.gucci.blog_service.post.domain.Post;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -24,6 +25,8 @@ public class Comment extends BaseEntity { //todo: user연결하기
     @Column(columnDefinition="text", nullable=false)
     private String content;
 
+    private Boolean isDeleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
@@ -39,5 +42,10 @@ public class Comment extends BaseEntity { //todo: user연결하기
 
     public void updateContent(String content) {
         this.content = content;
+    }
+
+    public void setDeleted(){
+        this.isDeleted = true;
+        this.content = "삭제된 댓글입니다.";
     }
 }
