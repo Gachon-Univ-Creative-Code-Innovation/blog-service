@@ -12,23 +12,23 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/blog/")
+@RequestMapping("api/blog/comments")
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("comments")
+    @PostMapping("")
     public ApiResponse<String> createComment(@RequestBody CommentRequestDTO.CreateComment createComment) {
         Comment comment = commentService.createComment(createComment);
         return ApiResponse.success(comment.getCommentId()+" 댓글이 정상적으로 생성되었습니다");
     }
 
-    @GetMapping("comments/")
+    @GetMapping("")
     public ApiResponse<List<CommentResponseDTO.GetComments>> getComments(@RequestParam(name = "postId") Long postId){
         List<CommentResponseDTO.GetComments> getComments = commentService.getCommentsByPostId(postId);
         return ApiResponse.success(getComments);
     }
 
-    @PatchMapping("comments/")
+    @PatchMapping("")
     public ApiResponse<String> modifyComments(
             @RequestParam(name="commentId") Long commentId,
             @RequestBody CommentRequestDTO.UpdateComment updateComment
@@ -37,7 +37,7 @@ public class CommentController {
         return ApiResponse.success(comment.getCommentId() + " 댓글 정상적으로 업데이트를 완료했습니다");
     }
 
-    @DeleteMapping("comments/")
+    @DeleteMapping("")
     public ApiResponse<String> deleteComments(@RequestParam(name="commentId") Long commentId) {
         commentService.deleteComment(commentId);
         return ApiResponse.success("일정 삭제 완료");
