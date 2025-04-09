@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # create, update, none 등 상황에 따라
+      ddl-auto: create  # create, update, none 등 상황에 따라
     show-sql: true
     properties:
       hibernate:

@@ -17,6 +17,7 @@ public class CommentResponseDTO {
         Long authorId;
         String authorNickname;
         String content;
+        Integer depth;
         LocalDateTime createTime;
         LocalDateTime updateTime;
     }
