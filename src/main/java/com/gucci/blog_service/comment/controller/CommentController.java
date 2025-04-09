@@ -12,13 +12,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/blog/comments")
+@RequestMapping("api/blog-service/comments")
 public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("")
-    public ApiResponse<String> createComment(@RequestBody CommentRequestDTO.CreateComment createComment) {
-        Comment comment = commentService.createComment(createComment);
+    public ApiResponse<String> createComment(
+            @RequestHeader("Authorization") String token,
+            @RequestBody CommentRequestDTO.CreateComment createComment
+    ) {
+        Comment comment = commentService.createComment(createComment, token);
         return ApiResponse.success(comment.getCommentId()+" 댓글이 정상적으로 생성되었습니다");
     }
 

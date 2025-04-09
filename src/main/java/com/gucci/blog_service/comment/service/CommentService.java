@@ -4,6 +4,7 @@ import com.gucci.blog_service.comment.domain.Comment;
 import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
 import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.repository.CommentRepository;
+import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.service.PostService;
 import com.gucci.common.exception.CustomException;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.net.http.HttpClient;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,12 +24,16 @@ import java.util.Optional;
 public class CommentService {
     private final PostService postService;
     private final CommentRepository commentRepository;
+    private final JwtTokenHelper jwtTokenHelper;
 
-    public Comment createComment(CommentRequestDTO.CreateComment createComment) {
+    public Comment createComment(CommentRequestDTO.CreateComment createComment, String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
         Post post = postService.getPostById(createComment.getPostId());
         Comment parentComment = commentRepository.findById(createComment.getParentCommentId()).orElse(null);
 
         Comment newComment = Comment.builder()
+                .userId(userId)
                 .post(post)
                 .content(createComment.getContent())
                 .parentComment(parentComment)
@@ -64,7 +70,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .createTime(comment.getCreatedAt())
                 .updateTime(comment.getUpdatedAt())
-                .authorNickname("임시")
+                .authorNickname(comment.getUserId() == null ? null : "임시") //user-service와 통신해야함
                 .authorId(0L)
                 .depth(depth)
                 .isDeleted(comment.getIsDeleted())
