@@ -5,6 +5,7 @@ import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
 import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.service.CommentService;
 import com.gucci.common.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class CommentController {
     @PostMapping("")
     public ApiResponse<String> createComment(
             @RequestHeader("Authorization") String token,
-            @RequestBody CommentRequestDTO.CreateComment createComment
+            @RequestBody @Valid CommentRequestDTO.CreateComment createComment
     ) {
         Comment comment = commentService.createComment(createComment, token);
         return ApiResponse.success(comment.getCommentId()+" 댓글이 정상적으로 생성되었습니다");
@@ -36,7 +37,7 @@ public class CommentController {
     public ApiResponse<String> modifyComments(
             @RequestHeader("Authorization") String token,
             @PathVariable Long commentId,
-            @RequestBody CommentRequestDTO.UpdateComment updateComment
+            @RequestBody @Valid CommentRequestDTO.UpdateComment updateComment
     ) {
         Comment comment = commentService.updateComment(commentId, updateComment, token);
         return ApiResponse.success(comment.getCommentId() + " 댓글 정상적으로 업데이트를 완료했습니다");
