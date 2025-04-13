@@ -40,7 +40,7 @@ public class CommentControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private JpaMetamodelMappingContext jpaMetamodelMappingContext; // JPA 오류 방지용
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext; // Application @EnableJpaAuditing
 
     @Test
     @DisplayName("댓글 생성 테스트 - root 댓글")
