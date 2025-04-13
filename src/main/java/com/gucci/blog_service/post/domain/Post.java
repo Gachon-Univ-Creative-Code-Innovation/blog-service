@@ -3,6 +3,7 @@ package com.gucci.blog_service.post.domain;
 import com.gucci.blog_service.config.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Post extends BaseEntity { //todo: user연결하기
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
