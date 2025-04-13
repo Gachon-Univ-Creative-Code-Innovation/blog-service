@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.net.http.HttpClient;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -83,7 +80,9 @@ public class CommentService {
         result.add(dto);
 
         // 자식 댓글도 정렬해서 재귀 호출
-        List<Comment> childComments = comment.getChildComments().stream()
+        List<Comment> childComments = Optional.ofNullable(comment.getChildComments())
+                .orElse(Collections.emptyList())
+                .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList();
 
