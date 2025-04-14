@@ -108,7 +108,7 @@ public class CommentServiceTest {
 
         assertThatThrownBy(() -> commentService.updateComment(commentId, dto, token))
                 .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.INVALID_ARGUMENT.getMessage());
+                .hasMessageContaining(ErrorCode.NOT_FOUND_COMMENT.getMessage());
     }
 
     @Test
@@ -127,7 +127,7 @@ public class CommentServiceTest {
 
         assertThatThrownBy(() -> commentService.updateComment(commentId, dto, token))
                 .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.INVALID_ARGUMENT.getMessage());
+                .hasMessageContaining(ErrorCode.NO_PERMISSION.getMessage());
     }
 
     @Test
@@ -167,7 +167,7 @@ public class CommentServiceTest {
 
         assertThatThrownBy(() -> commentService.deleteComment(commentId, token))
                 .isInstanceOf(CustomException.class)
-                .hasMessageContaining(ErrorCode.INVALID_ARGUMENT.getMessage());
+                .hasMessageContaining(ErrorCode.NO_PERMISSION.getMessage());
     }
 
 
