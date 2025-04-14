@@ -97,11 +97,11 @@ public class CommentService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT)); //todo : NOT_FOUND_COMMNET commentId에 해당하는 댓글이 없음
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
         //권한체크
         if (!comment.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.INVALID_ARGUMENT); //todo : NO_PERMISSION
+            throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
         comment.updateContent(updateComment.getContent());
@@ -113,11 +113,11 @@ public class CommentService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ARGUMENT));//todo : NO_PERMISSION
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
         //권한체크
         if (!comment.getUserId().equals(userId) && !comment.getPost().getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.INVALID_ARGUMENT);
+            throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
         comment.setDeleted();
