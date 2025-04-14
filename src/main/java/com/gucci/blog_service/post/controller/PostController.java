@@ -32,4 +32,14 @@ public class PostController {
         PostResponseDTO.GetPostDetail getPostDetail = postService.getPostDetail(postId);
         return ApiResponse.success(getPostDetail);
     }
+
+    @PatchMapping("/{postId}")
+    public ApiResponse<String> updatePost(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long postId,
+            @RequestBody @Valid PostRequestDTO.updatePost dto
+    ){
+        Post post = postService.updatePost(token, postId, dto);
+        return ApiResponse.success(post.getPostId() + " 글이 정상적으로 수정되었습니다.");
+    }
 }
