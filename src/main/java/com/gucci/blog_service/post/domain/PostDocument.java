@@ -17,4 +17,8 @@ public class PostDocument {
     private String id;
 
     private String content;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

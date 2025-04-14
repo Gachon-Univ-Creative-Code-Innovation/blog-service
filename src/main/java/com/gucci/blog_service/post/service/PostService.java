@@ -58,6 +58,26 @@ public class PostService {
                 .build();
     }
 
+    @Transactional
+    public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+        //권한 체크. 글 작성자만 수정 가능
+        if (!post.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+
+        postDocument.updateContent(dto.getContent());
+        postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
+
+        post.updateTitle(dto.getTitle());
+        return post;
+    }
+
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
