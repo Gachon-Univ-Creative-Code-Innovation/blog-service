@@ -4,6 +4,7 @@ import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
+import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.common.exception.CustomException;
@@ -39,6 +40,23 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
+        Post post = postRepository.findById(postId).
+                orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
+
+        return PostResponseDTO.GetPostDetail.builder()
+                .postId(post.getPostId())
+                .authorId(post.getUserId())
+                .authorNickname("임시")
+                .view(post.getView())
+                .title(post.getTitle())
+                .content(postDocument.getContent())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
 
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(
