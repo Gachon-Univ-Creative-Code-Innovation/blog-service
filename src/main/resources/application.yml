@@ -15,7 +15,12 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
-      uri: ${LOCAL_MONGODB_URI}
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      database: alog
+    #mongodb:
+     # uri: ${LOCAL_MONGODB_URI}
 
 jwt:
   secret: ${JWT_SECRET}
