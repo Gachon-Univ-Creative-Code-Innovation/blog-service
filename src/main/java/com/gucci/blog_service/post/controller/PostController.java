@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
+    /**
+     * 블로그 글
+     */
     @PostMapping("")
     public ApiResponse<String> createPost(
             @RequestHeader("Authorization") String token,
@@ -51,4 +54,19 @@ public class PostController {
         postService.deletePost(token, postId);
         return ApiResponse.success("글이 정상적으로 삭제되었습니다.");
     }
+
+
+    /**
+     * 임시저장 글
+     * 임시저장했다가 글을 불러와서 수정하고 발행하면 어케됨?
+     */
+    @PostMapping("/temp")
+    public ApiResponse<String> createTempPost(
+            @RequestHeader("Authorization") String token,
+            @RequestBody @Valid PostRequestDTO.createTempPost dto
+    ){
+        Post post = postService.createTempPost(token, dto);
+        return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
+    }
+
 }
