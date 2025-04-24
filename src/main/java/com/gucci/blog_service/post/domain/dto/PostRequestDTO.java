@@ -6,6 +6,7 @@ import lombok.Getter;
 public class PostRequestDTO {
     @Getter
     public static class createPost{
+        Long postId;
         @NotBlank(message = "제목은 필수입니다.")
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
