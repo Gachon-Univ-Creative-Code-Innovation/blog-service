@@ -60,7 +60,6 @@ public class PostController {
 
     /**
      * 임시저장 글
-     * 임시저장했다가 글을 불러와서 수정하고 발행하면 어케됨?
      */
     @PostMapping("/draft")
     public ApiResponse<String> createDraft(
@@ -86,6 +85,15 @@ public class PostController {
     ){
         PostResponseDTO.GetDraftList response = postService.getDraftList(token);
         return ApiResponse.success(response);
+    }
+
+    @DeleteMapping("/draft/{postId}")
+    public ApiResponse<String> deleteDraft(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long postId
+    ){
+        postService.deleteDraft(token, postId);
+        return ApiResponse.success("임시저장 글 삭제 완료");
     }
 
 }
