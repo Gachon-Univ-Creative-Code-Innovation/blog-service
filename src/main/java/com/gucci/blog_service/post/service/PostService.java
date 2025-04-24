@@ -1,8 +1,6 @@
 package com.gucci.blog_service.post.service;
 
-import com.gucci.blog_service.comment.domain.Comment;
 import com.gucci.blog_service.comment.service.CommentRefService;
-import com.gucci.blog_service.comment.service.CommentService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
@@ -14,9 +12,9 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -154,6 +152,32 @@ public class PostService {
                 .content(postDocument.getContent())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
+    public PostResponseDTO.GetDraftList getDraftList(String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        List<Post> postList = postRepository.findAllByUserId(userId);
+
+        List<PostResponseDTO.GetDraftDetail> draftList = postList.stream().map(post -> {
+                PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+
+                return PostResponseDTO.GetDraftDetail.builder()
+                        .postId(post.getPostId())
+                        .title(post.getTitle())
+                        .authorId(post.getUserId())
+                        .authorNickname("임시")
+                        .content(postDocument.getContent())
+                        .updatedAt(post.getUpdatedAt())
+                        .createdAt(post.getCreatedAt())
+                        .build();
+            }
+        ).toList();
+
+        return PostResponseDTO.GetDraftList.builder()
+                .draftList(draftList)
                 .build();
     }
 }

@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/blog-service/posts")
@@ -68,12 +70,21 @@ public class PostController {
         Post post = postService.createDraft(token, dto);
         return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
     }
+
     @GetMapping("/draft/{postId}")
     public ApiResponse<PostResponseDTO.GetDraftDetail> getDraftDetail(
             @RequestHeader("Authorization") String token,
             @PathVariable Long postId
     ){
         PostResponseDTO.GetDraftDetail response = postService.getDraftDetail(token, postId);
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/draft")
+    public ApiResponse<PostResponseDTO.GetDraftList> getDraft(
+            @RequestHeader("Authorization") String token
+    ){
+        PostResponseDTO.GetDraftList response = postService.getDraftList(token);
         return ApiResponse.success(response);
     }
 
