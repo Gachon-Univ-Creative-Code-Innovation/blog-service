@@ -47,7 +47,7 @@ public class PostService {
                 .documentId(postDocument.getId())
                 .userId(userId)
                 .title(dto.getTitle())
-                .isTemp(false)
+                .isDraft(false)
                 .build();
 
         return postRepository.save(post);
@@ -115,7 +115,7 @@ public class PostService {
     /**
      * 임시저장글
      */
-    public Post createTempPost(String token, PostRequestDTO.createTempPost dto) {
+    public Post createDraft(String token, PostRequestDTO.createDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         PostDocument postDocument = PostDocument.builder()
@@ -128,9 +128,32 @@ public class PostService {
                 .documentId(postDocument.getId())
                 .userId(userId)
                 .title(dto.getTitle())
-                .isTemp(true)
+                .isDraft(true)
                 .build();
 
         return postRepository.save(post);
+    }
+
+    public PostResponseDTO.GetDraftDetail getDraftDetail(String token, Long postId) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+
+        if (!post.getUserId().equals(userId)) { //사용자 != 임시저장 작성자
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+
+        return PostResponseDTO.GetDraftDetail.builder()
+                .postId(post.getPostId())
+                .authorId(post.getUserId())
+                .title(post.getTitle())
+                .authorNickname("임시")
+                .content(postDocument.getContent())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
     }
 }

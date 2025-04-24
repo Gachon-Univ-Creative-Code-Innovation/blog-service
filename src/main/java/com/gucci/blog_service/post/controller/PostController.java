@@ -60,13 +60,21 @@ public class PostController {
      * 임시저장 글
      * 임시저장했다가 글을 불러와서 수정하고 발행하면 어케됨?
      */
-    @PostMapping("/temp")
-    public ApiResponse<String> createTempPost(
+    @PostMapping("/draft")
+    public ApiResponse<String> createDraft(
             @RequestHeader("Authorization") String token,
-            @RequestBody @Valid PostRequestDTO.createTempPost dto
+            @RequestBody @Valid PostRequestDTO.createDraft dto
     ){
-        Post post = postService.createTempPost(token, dto);
+        Post post = postService.createDraft(token, dto);
         return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
+    }
+    @GetMapping("/draft/{postId}")
+    public ApiResponse<PostResponseDTO.GetDraftDetail> getDraftDetail(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long postId
+    ){
+        PostResponseDTO.GetDraftDetail response = postService.getDraftDetail(token, postId);
+        return ApiResponse.success(response);
     }
 
 }

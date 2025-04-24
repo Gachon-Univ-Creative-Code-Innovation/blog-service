@@ -31,7 +31,7 @@ public class Post extends BaseEntity { //todo: user연결하기
     private String content;
 
     @Column(columnDefinition = "boolean default false", nullable = false)
-    private boolean isTemp = false;
+    private boolean isDraft = false;
 
     public void updateTitle(String title) {
         this.title = title;
