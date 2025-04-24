@@ -30,6 +30,9 @@ public class PostService {
 
     private final JwtTokenHelper jwtTokenHelper;
 
+    /**
+     * 게시글
+     */
     @Transactional
     public Post createPost(String token, PostRequestDTO.createPost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -44,6 +47,7 @@ public class PostService {
                 .documentId(postDocument.getId())
                 .userId(userId)
                 .title(dto.getTitle())
+                .isTemp(false)
                 .build();
 
         return postRepository.save(post);
@@ -106,5 +110,27 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
         );
+    }
+
+    /**
+     * 임시저장글
+     */
+    public Post createTempPost(String token, PostRequestDTO.createTempPost dto) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        PostDocument postDocument = PostDocument.builder()
+                .content(dto.getContent())
+                .build();
+
+        postDocRepository.save(postDocument);
+        Post post = Post.builder()
+                .view(0L)
+                .documentId(postDocument.getId())
+                .userId(userId)
+                .title(dto.getTitle())
+                .isTemp(true)
+                .build();
+
+        return postRepository.save(post);
     }
 }

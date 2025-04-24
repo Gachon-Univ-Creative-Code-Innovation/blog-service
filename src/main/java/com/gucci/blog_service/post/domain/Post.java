@@ -28,6 +28,11 @@ public class Post extends BaseEntity { //todo: user연결하기
     @Column(columnDefinition = "bigint default 0", nullable = false)
     private Long view = 0L;
 
+    private String content;
+
+    @Column(columnDefinition = "boolean default false", nullable = false)
+    private boolean isTemp = false;
+
     public void updateTitle(String title) {
         this.title = title;
     }
