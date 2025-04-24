@@ -42,4 +42,13 @@ public class PostController {
         Post post = postService.updatePost(token, postId, dto);
         return ApiResponse.success(post.getPostId() + " 글이 정상적으로 수정되었습니다.");
     }
+
+    @DeleteMapping("/{postId}")
+    public ApiResponse<String> deletePost(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long postId
+    ){
+        postService.deletePost(token, postId);
+        return ApiResponse.success("글이 정상적으로 삭제되었습니다.");
+    }
 }
