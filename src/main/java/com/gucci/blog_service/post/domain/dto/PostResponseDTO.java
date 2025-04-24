@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostResponseDTO {
 
@@ -32,5 +33,11 @@ public class PostResponseDTO {
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
         //todo : tag, category
+    }
+
+    @Builder
+    @Getter
+    public static class GetDraftList{
+        List<GetDraftDetail> draftList;
     }
 }
