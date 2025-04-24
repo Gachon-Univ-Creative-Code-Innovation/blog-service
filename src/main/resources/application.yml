@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${LOCAL_DB_URL}
+    username: ${LOCAL_DB_USERNAME}
+    password: ${LOCAL_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver  # (optional, 대부분 auto detect 되지만 명시해도 좋음)
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # create, update, none 등 상황에 따라
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true  # SQL 로그 보기 좋게 포맷
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+jwt:
+  secret: ${JWT_SECRET}
