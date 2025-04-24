@@ -95,6 +95,8 @@ public class PostService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         //권한 체크. 글 작성자만 삭제 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
@@ -102,13 +104,9 @@ public class PostService {
 
         commentRefService.deleteAllByPost(post);
         postRepository.delete(post);
+        postDocRepository.delete(postDocument);
     }
 
-    public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
-        );
-    }
 
     /**
      * 임시저장글
@@ -179,5 +177,27 @@ public class PostService {
         return PostResponseDTO.GetDraftList.builder()
                 .draftList(draftList)
                 .build();
+    }
+
+    public void deleteDraft(String token, Long postId) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        //권한 체크. 글 작성자만 삭제 가능
+        if (!post.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+
+        postRepository.delete(post);
+        postDocRepository.delete(postDocument);
+    }
+
+    public Post getPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(
+                () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
+        );
     }
 }
