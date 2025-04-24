@@ -20,4 +20,17 @@ public class PostResponseDTO {
         LocalDateTime updatedAt;
         //todo : tag, category
     }
+
+    @Builder
+    @Getter
+    public static class GetDraftDetail{
+        Long postId;
+        Long authorId;
+        String authorNickname;
+        String title;
+        String content;
+        LocalDateTime createdAt;
+        LocalDateTime updatedAt;
+        //todo : tag, category
+    }
 }
