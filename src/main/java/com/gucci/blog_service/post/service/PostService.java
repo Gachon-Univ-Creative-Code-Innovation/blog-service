@@ -35,6 +35,17 @@ public class PostService {
     public Post createPost(String token, PostRequestDTO.createPost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
+        //임시저장 글이었을 경우
+        if (dto.getPostId() != null) {
+            Post post = postRepository.findById(dto.getPostId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            post.publish();
+
+            return post;
+        }
+
+
+        // 새로 작성한 글인 경우
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())
                 .build();
