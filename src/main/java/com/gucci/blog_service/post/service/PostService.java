@@ -1,5 +1,8 @@
 package com.gucci.blog_service.post.service;
 
+import com.gucci.blog_service.comment.domain.Comment;
+import com.gucci.blog_service.comment.service.CommentRefService;
+import com.gucci.blog_service.comment.service.CommentService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
@@ -11,13 +14,19 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostDocRepository postDocRepository;
+
+
+    private final CommentRefService commentRefService;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -76,6 +85,21 @@ public class PostService {
 
         post.updateTitle(dto.getTitle());
         return post;
+    }
+
+    @Transactional
+    public void deletePost(String token, Long postId) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        //권한 체크. 글 작성자만 삭제 가능
+        if (!post.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+
+        commentRefService.deleteAllByPost(post);
+        postRepository.delete(post);
     }
 
     public Post getPostById(Long postId) {
