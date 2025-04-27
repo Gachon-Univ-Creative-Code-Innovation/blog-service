@@ -25,7 +25,8 @@ public class PostResponseDTO {
     @Builder
     @Getter
     public static class GetDraftDetail{
-        Long postId;
+        Long draftPostId;
+        Long parentPostId;
         Long authorId;
         String authorNickname;
         String title;
@@ -37,7 +38,17 @@ public class PostResponseDTO {
 
     @Builder
     @Getter
+    public static class GetDraft{
+        Long draftPostId;
+        String title;
+        String content;
+        LocalDateTime createdAt;
+        LocalDateTime updatedAt;
+    }
+
+    @Builder
+    @Getter
     public static class GetDraftList{
-        List<GetDraftDetail> draftList;
+        List<GetDraft> draftList;
     }
 }

@@ -17,7 +17,7 @@ public class Post extends BaseEntity { //todo: user연결하기
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long postId;
 
-    private Long parentPostId;
+    private Long parentPostId; //임시저장된 글의 원본 글 (발행되어있는)
 
     @Column(nullable = false)
     private Long userId;

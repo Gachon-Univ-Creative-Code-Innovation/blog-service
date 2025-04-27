@@ -43,7 +43,6 @@ public class PostService {
             return post;
         }
 
-
         // 새로 작성한 글인 경우
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())
@@ -84,7 +83,6 @@ public class PostService {
     @Transactional
     public Post updatePost(String token, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
-
 
         Post post;
         PostDocument postDocument;
@@ -217,14 +215,18 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+        if (!post.isDraft()) { // 임시저장 글이 아님
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT);
+        }
         if (!post.getUserId().equals(userId)) { //사용자 != 임시저장 작성자
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
         return PostResponseDTO.GetDraftDetail.builder()
-                .postId(post.getPostId())
+                .draftPostId(post.getPostId())
+                .parentPostId(post.getParentPostId())
                 .authorId(post.getUserId())
                 .title(post.getTitle())
                 .authorNickname("임시")
@@ -234,20 +236,21 @@ public class PostService {
                 .build();
     }
 
+
     public PostResponseDTO.GetDraftList getDraftList(String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         List<Post> postList = postRepository.findAllByUserId(userId);
 
-        List<PostResponseDTO.GetDraftDetail> draftList = postList.stream().map(post -> {
+        List<PostResponseDTO.GetDraft> draftList = postList.stream()
+                .filter(Post::isDraft) // draft만 통과
+                .map(post -> {
                 PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                         .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
 
-                return PostResponseDTO.GetDraftDetail.builder()
-                        .postId(post.getPostId())
+                return PostResponseDTO.GetDraft.builder()
+                        .draftPostId(post.getPostId())
                         .title(post.getTitle())
-                        .authorId(post.getUserId())
-                        .authorNickname("임시")
                         .content(postDocument.getContent())
                         .updatedAt(post.getUpdatedAt())
                         .createdAt(post.getCreatedAt())
@@ -259,6 +262,7 @@ public class PostService {
                 .draftList(draftList)
                 .build();
     }
+
 
     public void deleteDraft(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -275,6 +279,8 @@ public class PostService {
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
     }
+
+
 
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(
