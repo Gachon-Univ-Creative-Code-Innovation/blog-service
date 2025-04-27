@@ -49,8 +49,8 @@ public class PostService {
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())
                 .build();
-
         postDocRepository.save(postDocument);
+
         Post post = Post.builder()
                 .view(0L)
                 .documentId(postDocument.getId())
@@ -81,16 +81,40 @@ public class PostService {
     }
 
     @Transactional
-    public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
+    public Post updatePost(String token, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+
+        Post post;
+        PostDocument postDocument;
+        //임시저장 글이었을 경우
+        if (dto.getParentPostId() != null){
+            post = postRepository.findById(dto.getParentPostId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            postDocument = postDocRepository.findById(post.getDocumentId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+        }
+        else { // 바로 수정할 경우
+            post = postRepository.findById(dto.getPostId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            postDocument = postDocRepository.findById(post.getDocumentId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+        }
+
         //권한 체크. 글 작성자만 수정 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+
+        // 임시저장 글이었을 경우 임시저장 글 삭제
+        // 권한 체크 후 삭제 진행하는게 맞다고 판단돼서 여기에 위치함
+        if (dto.getParentPostId() != null){
+            Post draft = postRepository.findById(dto.getPostId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+            postRepository.delete(draft);
+            postDocRepository.delete(draftDocument);
         }
 
         postDocument.updateContent(dto.getContent());
