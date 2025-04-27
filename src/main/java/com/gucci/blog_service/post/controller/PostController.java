@@ -7,7 +7,6 @@ import com.gucci.blog_service.post.service.PostService;
 import com.gucci.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
