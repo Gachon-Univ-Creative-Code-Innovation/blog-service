@@ -137,6 +137,16 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
+        //임시저장 글 삭제
+        Post draft = postRepository.findByParentPostId(postId).orElse(null);
+        if (draft != null) {
+            PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            postRepository.delete(draft);
+            postDocRepository.delete(draftDoc);
+        }
+
+        //글 삭제
         commentRefService.deleteAllByPost(post);
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
