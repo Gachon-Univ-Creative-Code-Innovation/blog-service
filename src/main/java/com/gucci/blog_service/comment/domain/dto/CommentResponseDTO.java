@@ -11,7 +11,7 @@ public class CommentResponseDTO {
 
     @Getter
     @Builder
-    public static class GetComments{
+    public static class GetComment{
         Long commentId;
         Long parentCommentId;
         Long authorId;
@@ -21,6 +21,12 @@ public class CommentResponseDTO {
         Boolean isDeleted;
         LocalDateTime createTime;
         LocalDateTime updateTime;
+    }
+
+    @Getter
+    @Builder
+    public static class GetCommentList{
+        List<GetComment> commentList;
     }
 
 }
