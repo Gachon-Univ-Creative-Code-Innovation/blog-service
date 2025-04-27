@@ -27,6 +27,8 @@ public class Post extends BaseEntity { //todo: user연결하기
 
     private String documentId;
 
+    private String summary;
+
     @Column(columnDefinition = "bigint default 0", nullable = false)
     private Long view = 0L;
 
