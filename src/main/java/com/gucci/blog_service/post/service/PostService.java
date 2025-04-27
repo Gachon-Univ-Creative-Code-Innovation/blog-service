@@ -14,7 +14,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -62,6 +61,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
         Post post = postRepository.findById(postId).
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
@@ -79,6 +79,7 @@ public class PostService {
                 .updatedAt(post.getUpdatedAt())
                 .build();
     }
+
 
     @Transactional
     public Post updatePost(String token, PostRequestDTO.updatePost dto) {
@@ -124,6 +125,7 @@ public class PostService {
         return post;
     }
 
+
     @Transactional
     public void deletePost(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -131,7 +133,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
         //권한 체크. 글 작성자만 삭제 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
@@ -141,7 +143,7 @@ public class PostService {
         Post draft = postRepository.findByParentPostId(postId).orElse(null);
         if (draft != null) {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
             postRepository.delete(draft);
             postDocRepository.delete(draftDoc);
         }
@@ -156,24 +158,58 @@ public class PostService {
     /**
      * 임시저장글
      */
+    @Transactional
     public Post createDraft(String token, PostRequestDTO.createDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        PostDocument postDocument = PostDocument.builder()
-                .content(dto.getContent())
-                .build();
+        //글 발행 전 임시저장
+        if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
+            PostDocument postDocument = PostDocument.builder()
+                    .content(dto.getContent())
+                    .build();
+            postDocRepository.save(postDocument);
 
-        postDocRepository.save(postDocument);
-        Post post = Post.builder()
-                .view(0L)
-                .documentId(postDocument.getId())
-                .userId(userId)
-                .title(dto.getTitle())
-                .isDraft(true)
-                .build();
+            Post post = Post.builder()
+                    .view(0L)
+                    .documentId(postDocument.getId())
+                    .userId(userId)
+                    .title(dto.getTitle())
+                    .isDraft(true)
+                    .build();
+            return postRepository.save(post);
+        }
+        // 글 발행 후 임시저장
+        else if (dto.getDraftPostId() == null){
+            PostDocument postDocument = PostDocument.builder()
+                    .content(dto.getContent())
+                    .build();
+            postDocRepository.save(postDocument);
 
-        return postRepository.save(post);
+            Post post = Post.builder()
+                    .view(0L)
+                    .parentPostId(dto.getParentPostId())
+                    .documentId(postDocument.getId())
+                    .userId(userId)
+                    .title(dto.getTitle())
+                    .isDraft(true)
+                    .build();
+            return postRepository.save(post);
+        }
+        // 임시저장 글을 또 임시저장
+        else {
+            Post draft = postRepository.findById(dto.getDraftPostId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+            PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+
+            draftDoc.updateContent(dto.getContent());
+            postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
+            draft.updateTitle(dto.getTitle());
+
+            return draft;
+        }
     }
+
 
     public PostResponseDTO.GetDraftDetail getDraftDetail(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
