@@ -60,7 +60,7 @@ public class PostController {
     /**
      * 임시저장 글
      */
-    @PostMapping("/draft")
+    @PostMapping("/drafts")
     public ApiResponse<String> createDraft(
             @RequestHeader("Authorization") String token,
             @RequestBody @Valid PostRequestDTO.createDraft dto
@@ -69,7 +69,7 @@ public class PostController {
         return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
     }
 
-    @GetMapping("/draft/{postId}")
+    @GetMapping("/drafts/{postId}")
     public ApiResponse<PostResponseDTO.GetDraftDetail> getDraftDetail(
             @RequestHeader("Authorization") String token,
             @PathVariable Long postId
@@ -78,15 +78,15 @@ public class PostController {
         return ApiResponse.success(response);
     }
 
-    @GetMapping("/draft")
-    public ApiResponse<PostResponseDTO.GetDraftList> getDraft(
+    @GetMapping("/drafts")
+    public ApiResponse<PostResponseDTO.GetDraftList> getDraftList(
             @RequestHeader("Authorization") String token
     ){
         PostResponseDTO.GetDraftList response = postService.getDraftList(token);
         return ApiResponse.success(response);
     }
 
-    @DeleteMapping("/draft/{postId}")
+    @DeleteMapping("/drafts/{postId}")
     public ApiResponse<String> deleteDraft(
             @RequestHeader("Authorization") String token,
             @PathVariable Long postId
