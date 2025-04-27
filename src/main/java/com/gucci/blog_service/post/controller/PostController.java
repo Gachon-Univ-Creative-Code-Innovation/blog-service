@@ -68,12 +68,12 @@ public class PostController {
         return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
     }
 
-    @GetMapping("/drafts/{postId}")
+    @GetMapping("/drafts/{draftPostId}")
     public ApiResponse<PostResponseDTO.GetDraftDetail> getDraftDetail(
             @RequestHeader("Authorization") String token,
-            @PathVariable Long postId
+            @PathVariable Long draftPostId
     ){
-        PostResponseDTO.GetDraftDetail response = postService.getDraftDetail(token, postId);
+        PostResponseDTO.GetDraftDetail response = postService.getDraftDetail(token, draftPostId);
         return ApiResponse.success(response);
     }
 
@@ -85,12 +85,12 @@ public class PostController {
         return ApiResponse.success(response);
     }
 
-    @DeleteMapping("/drafts/{postId}")
+    @DeleteMapping("/drafts/{draftPostId}")
     public ApiResponse<String> deleteDraft(
             @RequestHeader("Authorization") String token,
-            @PathVariable Long postId
+            @PathVariable Long draftPostId
     ){
-        postService.deleteDraft(token, postId);
+        postService.deleteDraft(token, draftPostId);
         return ApiResponse.success("임시저장 글 삭제 완료");
     }
 

@@ -43,7 +43,7 @@ public class CommentService {
     }
 
     // 포스트 별 댓글 조회
-    public List<CommentResponseDTO.GetComments> getCommentsByPostId(Long postId) {
+    public CommentResponseDTO.GetCommentList getCommentsByPostId(Long postId) {
         Post post = postService.getPostById(postId);
         List<Comment> allComments = commentRepository.findAllByPost(post);
 
@@ -52,16 +52,18 @@ public class CommentService {
                 .sorted(Comparator.comparing(Comment::getCreatedAt)) //처음 만들어진거 먼저 출력
                 .toList();
 
-        List<CommentResponseDTO.GetComments> result = new ArrayList<>();
+        List<CommentResponseDTO.GetComment> result = new ArrayList<>();
         for (Comment root : rootComments) {
             buildCommentTree(result, root, 0);
         }
 
-        return result;
+        return CommentResponseDTO.GetCommentList.builder()
+                .commentList(result)
+                .build();
     }
 
-    private void buildCommentTree(List<CommentResponseDTO.GetComments> result, Comment comment, int depth) {
-        CommentResponseDTO.GetComments dto = CommentResponseDTO.GetComments.builder()
+    private void buildCommentTree(List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
+        CommentResponseDTO.GetComment dto = CommentResponseDTO.GetComment.builder()
                 .commentId(comment.getCommentId())
                 .parentCommentId(
                         Optional.ofNullable(comment.getParentComment())//부모 댓글이 있으면

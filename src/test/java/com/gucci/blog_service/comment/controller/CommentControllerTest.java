@@ -71,26 +71,29 @@ public class CommentControllerTest {
     @Test
     @DisplayName("댓글 목록 조회 테스트")
     void getCommentsTest() throws Exception {
-        CommentResponseDTO.GetComments comment1 = CommentResponseDTO.GetComments.builder()
+        CommentResponseDTO.GetComment comment1 = CommentResponseDTO.GetComment.builder()
                 .commentId(1L)
                 .content("내용 1")
                 .authorNickname("작성자 1")
                 .build();
-        CommentResponseDTO.GetComments comment2 = CommentResponseDTO.GetComments.builder()
+        CommentResponseDTO.GetComment comment2 = CommentResponseDTO.GetComment.builder()
                 .commentId(2L)
                 .content("내용 2")
                 .authorNickname("작성자 2")
-                .build();;
+                .build();
+        CommentResponseDTO.GetCommentList commentList = CommentResponseDTO.GetCommentList.builder()
+                .commentList(List.of(comment1, comment2))
+                .build();
 
-        Mockito.when(commentService.getCommentsByPostId(1L)).thenReturn(List.of(comment1, comment2));
+        Mockito.when(commentService.getCommentsByPostId(1L)).thenReturn(commentList);
 
         mockMvc.perform(get("/api/blog-service/comments/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("데이터 조회에 성공했습니다."))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].commentId").value(1L))
-                .andExpect(jsonPath("$.data[1].commentId").value(2L));
+                .andExpect(jsonPath("$.message").value("요청이 성공적으로 처리되었습니다."))
+                .andExpect(jsonPath("$.data.commentList").isArray())
+                .andExpect(jsonPath("$.data.commentList.length()").value(2))
+                .andExpect(jsonPath("$.data.commentList[0].commentId").value(1L))
+                .andExpect(jsonPath("$.data.commentList[1].commentId").value(2L));
     }
 
     @Test
@@ -109,7 +112,7 @@ public class CommentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("데이터 조회에 성공했습니다."))
+                .andExpect(jsonPath("$.message").value("요청이 성공적으로 처리되었습니다."))
                 .andExpect(jsonPath("$.data").value("5 댓글 정상적으로 업데이트를 완료했습니다"));
     }
 
