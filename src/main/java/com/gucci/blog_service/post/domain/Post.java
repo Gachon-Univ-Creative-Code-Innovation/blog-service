@@ -17,6 +17,8 @@ public class Post extends BaseEntity { //todo: user연결하기
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long postId;
 
+    private Long parentPostId;
+
     @Column(nullable = false)
     private Long userId;
 
