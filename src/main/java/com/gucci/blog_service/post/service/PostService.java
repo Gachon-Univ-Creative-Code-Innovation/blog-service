@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -237,26 +240,36 @@ public class PostService {
     }
 
 
+
     public PostResponseDTO.GetDraftList getDraftList(String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         List<Post> postList = postRepository.findAllByUserId(userId);
+        List<String> draftDocIds = postList.stream()
+                .filter(Post::isDraft)
+                .map(Post::getDocumentId)
+                .toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(draftDocIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
+
 
         List<PostResponseDTO.GetDraft> draftList = postList.stream()
                 .filter(Post::isDraft) // draft만 통과
                 .map(post -> {
-                PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+                            PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                            if (postDocument == null) {
+                                throw new CustomException(ErrorCode.NOT_FOUND_POST);
+                            }
 
-                return PostResponseDTO.GetDraft.builder()
-                        .draftPostId(post.getPostId())
-                        .title(post.getTitle())
-                        .content(postDocument.getContent())
-                        .updatedAt(post.getUpdatedAt())
-                        .createdAt(post.getCreatedAt())
-                        .build();
-            }
-        ).toList();
+                            return PostResponseDTO.GetDraft.builder()
+                                    .draftPostId(post.getPostId())
+                                    .title(post.getTitle())
+                                    .content(postDocument.getContent())
+                                    .updatedAt(post.getUpdatedAt())
+                                    .createdAt(post.getCreatedAt())
+                                    .build();
+                        }
+                ).toList();
 
         return PostResponseDTO.GetDraftList.builder()
                 .draftList(draftList)
