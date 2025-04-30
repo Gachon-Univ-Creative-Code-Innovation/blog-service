@@ -43,7 +43,7 @@ public class PostService {
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
             post.publish();
 
-            return post;
+            return postRepository.save(post);
         }
 
         // 새로 작성한 글인 경우
@@ -89,14 +89,14 @@ public class PostService {
 
         Post post;
         PostDocument postDocument;
-        //임시저장 글이었을 경우
+        //1. 임시저장 글이었을 경우
         if (dto.getParentPostId() != null){
             post = postRepository.findById(dto.getParentPostId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
             postDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
         }
-        else { // 바로 수정할 경우
+        else { // 2. 바로 수정할 경우
             post = postRepository.findById(dto.getPostId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
             postDocument = postDocRepository.findById(post.getDocumentId())
@@ -108,7 +108,7 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
-        // 임시저장 글이었을 경우 임시저장 글 삭제
+        // 1. 임시저장 글이었을 경우 임시저장 글 삭제
         // 권한 체크 후 삭제 진행하는게 맞다고 판단돼서 여기에 위치함
         if (dto.getParentPostId() != null){
             Post draft = postRepository.findById(dto.getPostId())
@@ -164,7 +164,7 @@ public class PostService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         //글 발행 전 임시저장
-        if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
+        if (dto.getPostId() == null && dto.getParentPostId() == null){
             PostDocument postDocument = PostDocument.builder()
                     .content(dto.getContent())
                     .build();
@@ -180,7 +180,7 @@ public class PostService {
             return postRepository.save(post);
         }
         // 글 발행 후 임시저장
-        else if (dto.getDraftPostId() == null){
+        else if (dto.getPostId() == null){
             PostDocument postDocument = PostDocument.builder()
                     .content(dto.getContent())
                     .build();
@@ -198,7 +198,7 @@ public class PostService {
         }
         // 임시저장 글을 또 임시저장
         else {
-            Post draft = postRepository.findById(dto.getDraftPostId())
+            Post draft = postRepository.findById(dto.getPostId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
