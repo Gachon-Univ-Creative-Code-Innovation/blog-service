@@ -11,6 +11,7 @@ import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
+import net.bytebuddy.build.ToStringPlugin;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -47,6 +49,9 @@ public class PostServiceTest {
     private final Long userId = 1L;
     private final String token = "Bearer test-token";
 
+    /**
+     * 게시글
+     */
     @Test
     @DisplayName("게시글 생성 : postId != null (임시저장 후 발행)")
     void createPostAfterDraft() throws Exception {
@@ -388,4 +393,291 @@ public class PostServiceTest {
 
 
 
+    /**
+     * 임시저장글
+     */
+    @Test
+    @DisplayName("임시저장 생성 : 게시글 발행 전")
+    public void createDraftBeforePublishTest(){
+        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+                .postId(null)
+                .parentPostId(null)
+                .content("내용")
+                .title("제목")
+                .build();
+
+        Post draft = Post.builder()
+                .userId(userId)
+                .isDraft(true)
+                .title(request.getTitle())
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .content(request.getContent())
+                .build();
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postDocRepository.save(any(PostDocument.class))).thenReturn(draftDoc);
+        Mockito.when(postRepository.save(any(Post.class))).thenReturn(draft);
+
+        Post result = postService.createDraft(token, request);
+
+        assertThat(result.isDraft()).isTrue();
+        assertThat(result.getTitle()).isEqualTo(request.getTitle());
+
+        verify(postRepository).save(any(Post.class));
+        verify(postDocRepository).save(any(PostDocument.class));
+    }
+
+    @Test
+    @DisplayName("임시저장 생성 : 게시글 발행 후")
+    public void createDraftAfterPublishTest(){
+        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+                .postId(null)
+                .parentPostId(10L)
+                .content("내용")
+                .title("제목")
+                .build();
+
+        Post draft = Post.builder()
+                .userId(userId)
+                .parentPostId(request.getParentPostId())
+                .isDraft(true)
+                .title(request.getTitle())
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .content(request.getContent())
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postDocRepository.save(any(PostDocument.class))).thenReturn(draftDoc);
+        Mockito.when(postRepository.save(any(Post.class))).thenReturn(draft);
+
+        Post result = postService.createDraft(token, request);
+
+        assertThat(result.isDraft()).isTrue();
+        assertThat(result.getTitle()).isEqualTo(request.getTitle());
+        assertThat(result.getParentPostId()).isEqualTo(request.getParentPostId());
+
+        verify(postRepository).save(any(Post.class));
+        verify(postDocRepository).save(any(PostDocument.class));
+    }
+
+    @Test
+    @DisplayName("임시저장 생성 : 임시저장 글을 또 임시저장")
+    public void createDraftTest() {
+        String postDocId = "postDoc";
+        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+                .postId(1L)
+                .parentPostId(10L)
+                .content("내용")
+                .title("제목")
+                .build();
+
+        Post draft = Post.builder()
+                .postId(request.getPostId())
+                .userId(userId)
+                .parentPostId(request.getParentPostId())
+                .documentId(postDocId)
+                .isDraft(true)
+                .title(request.getTitle())
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .content(request.getContent())
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(request.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        Post result = postService.createDraft(token, request);
+
+        assertThat(result.isDraft()).isTrue();
+        assertThat(result.getTitle()).isEqualTo(request.getTitle());
+        assertThat(result.getParentPostId()).isEqualTo(request.getParentPostId());
+        assertThat(result.getPostId()).isEqualTo(request.getPostId());
+    }
+
+    @Test
+    @DisplayName("임시저장 상세조회")
+    public void getDraftTest(){
+        Long postId = 1L;
+        String postDocId = "postDoc";
+
+        Post draft = Post.builder()
+                .postId(postId)
+                .userId(userId)
+                .documentId(postDocId)
+                .isDraft(true)
+                .title("제목")
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .content("내용")
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        PostResponseDTO.GetDraftDetail result = postService.getDraftDetail(token, postId);
+
+        assertThat(result.getDraftPostId()).isEqualTo(postId);
+        assertThat(result.getAuthorId()).isEqualTo(userId);
+        assertThat(result.getTitle()).isEqualTo(draft.getTitle());
+        assertThat(result.getContent()).isEqualTo(draftDoc.getContent());
+        assertThat(result.getParentPostId()).isEqualTo(draft.getParentPostId());
+    }
+
+    @Test
+    @DisplayName("임시저장 상세조회 : 임시저장 글이 아님")
+    public void getDraftInvalidArgumentTest() {
+        Long postId = 1L;
+        String postDocId = "postDoc";
+
+        Post draft = Post.builder()
+                .postId(postId)
+                .userId(userId)
+                .documentId(postDocId)
+                .isDraft(false)
+                .title("제목")
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .content("내용")
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        assertThatThrownBy(() -> postService.getDraftDetail(token, postId))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(ErrorCode.INVALID_ARGUMENT.getMessage());
+    }
+
+    @Test
+    @DisplayName("임시저장 : 임시저장 작성자가 아님")
+    public void getDraftNoPermissionTest() {
+        Long postId = 1L;
+        String postDocId = "postDoc";
+
+        Post draft = Post.builder()
+                .postId(postId)
+                .userId(10L)
+                .documentId(postDocId)
+                .isDraft(true)
+                .title("제목")
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .content("내용")
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        assertThatThrownBy(() -> postService.getDraftDetail(token, postId))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(ErrorCode.NO_PERMISSION.getMessage());
+    }
+
+    @Test
+    @DisplayName("임시저장 리스트 조회")
+    public void getDraftListTest() {
+        Post draft = Post.builder()
+                .postId(1L)
+                .userId(10L)
+                .documentId("postDocId")
+                .isDraft(true)
+                .title("제목")
+                .build();
+        Post draft2 = Post.builder()
+                .postId(2L)
+                .userId(10L)
+                .documentId("postDocId2")
+                .isDraft(true)
+                .title("제목")
+                .build();
+        Post nonDraftPost = Post.builder()
+                .postId(103L)
+                .userId(userId)
+                .title("Published Post")
+                .documentId("doc3")
+                .isDraft(false)
+                .build();
+
+        PostDocument draftDoc = PostDocument.builder()
+                .id("postDocId")
+                .content("내용")
+                .build();
+
+        PostDocument draftDoc2 = PostDocument.builder()
+                .id("postDocId2")
+                .content("내용")
+                .build();
+
+        List<Post> allPosts = List.of(draft, draft2, nonDraftPost);
+        List<PostDocument> allPostDocuments = List.of(draftDoc, draftDoc2);
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findAllByUserId(anyLong())).thenReturn(allPosts);
+        Mockito.when(postDocRepository.findAllById(anyList())).thenReturn(allPostDocuments);
+
+        PostResponseDTO.GetDraftList result = postService.getDraftList(token);
+
+        assertThat(result.getDraftList().get(0).getDraftPostId()).isEqualTo(draft.getPostId());
+        assertThat(result.getDraftList().get(1).getDraftPostId()).isEqualTo(draft2.getPostId());
+        assertThat(result.getDraftList().size()).isEqualTo(2);
+    }
+
+
+    @Test
+    @DisplayName("임시저장 삭제")
+    public void deleteDraftTest() {
+        Long postId = 1L;
+        String postDocId = "postDoc";
+        Post draft = Post.builder()
+                .postId(postId)
+                .userId(userId)
+                .documentId(postDocId)
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        //when
+        postService.deleteDraft(token, postId);
+
+        //then
+        verify(postRepository).delete(draft);
+        verify(postDocRepository).delete(draftDoc);
+    }
+
+    @Test
+    @DisplayName("임시저장 삭제 : 임시저장 작성자가 아님")
+    public void deleteDraftNoPermissionTest() {
+        Long postId = 1L;
+        String postDocId = "postDoc";
+        Post draft = Post.builder()
+                .postId(postId)
+                .userId(10L)
+                .documentId(postDocId)
+                .build();
+        PostDocument draftDoc = PostDocument.builder()
+                .id(postDocId)
+                .build();
+
+        Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
+
+        assertThatThrownBy(() -> postService.deleteDraft(token, postId))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(ErrorCode.NO_PERMISSION.getMessage());
+    }
 }
