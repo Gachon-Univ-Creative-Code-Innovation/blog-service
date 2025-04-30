@@ -60,8 +60,13 @@ public class PostServiceTest {
                 .build();
         Post draft = Post.builder()
                 .postId(dto.getPostId())
+                .documentId("draftPostId")
                 .title(dto.getTitle())
                 .isDraft(true)
+                .build();
+        PostDocument draftPostDocument = PostDocument.builder()
+                .id("draftPostId")
+                .content(dto.getContent())
                 .build();
         Post post = Post.builder()
                 .postId(draft.getPostId())
@@ -71,6 +76,7 @@ public class PostServiceTest {
 
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
         Mockito.when(postRepository.findById(dto.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftPostDocument));
         Mockito.when(postRepository.save(any(Post.class))).thenReturn(post);
 
         Post result = postService.createPost(token, dto);
@@ -154,8 +160,7 @@ public class PostServiceTest {
         String postDocId = "postDoc";
 
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
-                .postId(draftId)
-                .parentPostId(postId)
+                .postId(postId)
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
@@ -186,17 +191,17 @@ public class PostServiceTest {
         //목객체
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
         //원본 찾고
-        Mockito.when(postRepository.findById(request.getParentPostId())).thenReturn(Optional.of(post));
+        Mockito.when(postRepository.findById(request.getPostId())).thenReturn(Optional.of(post));
         Mockito.when(postDocRepository.findById(post.getDocumentId())).thenReturn(Optional.of(postDoc));
         //임시 저장 찾고
-        Mockito.when(postRepository.findById(request.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postRepository.findByParentPostId(request.getPostId())).thenReturn(Optional.of(draft));
         Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
 
         //when
         Post result = postService.updatePost(token, request);
 
         //then
-        assertThat(result.getPostId()).isEqualTo(request.getParentPostId());
+        assertThat(result.getPostId()).isEqualTo(request.getPostId());
         assertThat(result.getTitle()).isEqualTo(request.getTitle());
         assertThat(result.getDocumentId()).isEqualTo(postDocId);
 
@@ -215,7 +220,6 @@ public class PostServiceTest {
 
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
                 .postId(postId)
-                .parentPostId(null)
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
