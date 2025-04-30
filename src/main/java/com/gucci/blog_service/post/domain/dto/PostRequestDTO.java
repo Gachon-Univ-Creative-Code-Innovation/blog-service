@@ -33,7 +33,7 @@ public class PostRequestDTO {
     @Getter
     @Builder
     public static class createDraft{
-        Long draftPostId; //임시저장 글 아이디
+        Long postId; //임시저장 글 아이디
         Long parentPostId; //발행된 글 아이디
         @NotBlank(message = "제목은 필수입니다.")
         String title;
