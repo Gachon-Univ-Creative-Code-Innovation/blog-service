@@ -21,8 +21,7 @@ public class PostRequestDTO {
     @Builder
     public static class updatePost{
         @NotNull(message = "post id 값은 필수입니다.")
-        Long postId;
-        Long parentPostId;
+        Long postId; // 발행된 postId, draft를 이용해 수정할 경의 draft의 paerentpostId
         @NotBlank(message = "제목은 필수입니다.")
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
@@ -33,7 +32,7 @@ public class PostRequestDTO {
     @Getter
     @Builder
     public static class createDraft{
-        Long postId; //임시저장 글 아이디
+        Long draftPostId; //임시저장 글 아이디
         Long parentPostId; //발행된 글 아이디
         @NotBlank(message = "제목은 필수입니다.")
         String title;
