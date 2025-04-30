@@ -230,12 +230,57 @@ public class PostIntegrationTest {
     @DisplayName("발행 -> 조회 -> 수정 -> 삭제")
     void fullPostTest() throws Exception {
         // 1. 발행
+        PostRequestDTO.createPost createPost = PostRequestDTO.createPost.builder()
+                .title("최초 발행 제목")
+                .content("최초 발행 내용")
+                .build();
+
+        MvcResult publishResult = mockMvc.perform(post("/api/blog-service/posts")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createPost)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andReturn();
+
+        String publishResponse = publishResult.getResponse().getContentAsString();
+        Long postId = extractPostIdFromMessage(publishResponse);
 
         // 2. 조회
+        mockMvc.perform(get("/api/blog-service/posts/{postId}", postId)
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.data.postId").value(postId))
+                .andExpect(jsonPath("$.data.title").value("최초 발행 제목"))
+                .andExpect(jsonPath("$.data.content").value("최초 발행 내용"));
 
         // 3. 수정
+        PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
+                .postId(postId)
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .build();
+
+        mockMvc.perform(patch("/api/blog-service/posts", postId)
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePost)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OK"));
+
+        // 3-1. 수정된 내용 다시 조회
+        mockMvc.perform(get("/api/blog-service/posts/{postId}", postId)
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("수정된 제목"))
+                .andExpect(jsonPath("$.data.content").value("수정된 내용"));
 
         // 4. 삭제
+        mockMvc.perform(delete("/api/blog-service/posts/{postId}", postId)
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OK"));
 
     }
 
@@ -252,6 +297,7 @@ public class PostIntegrationTest {
             System.out.println(">> DB에서 조회한 id: " + post.getPostId());
         }
     }
+
     // 메시지에서 숫자(draftPostId) 추출
     private Long extractPostIdFromMessage(String json) throws Exception {
         JsonNode root = objectMapper.readTree(json);
