@@ -41,8 +41,13 @@ public class PostService {
         if (dto.getPostId() != null) {
             Post post = postRepository.findById(dto.getPostId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-            post.publish();
+            PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
 
+            postDocument.updateContent(dto.getContent());
+            postDocRepository.save(postDocument);
+
+            post.publish(dto.getTitle());
             return postRepository.save(post);
         }
 
@@ -89,30 +94,21 @@ public class PostService {
 
         Post post;
         PostDocument postDocument;
-        //1. 임시저장 글이었을 경우
-        if (dto.getParentPostId() != null){
-            post = postRepository.findById(dto.getParentPostId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-            postDocument = postDocRepository.findById(post.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
-        }
-        else { // 2. 바로 수정할 경우
-            post = postRepository.findById(dto.getPostId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-            postDocument = postDocRepository.findById(post.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
-        }
+
+        post = postRepository.findById(dto.getPostId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        postDocument = postDocRepository.findById(post.getDocumentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+
 
         //권한 체크. 글 작성자만 수정 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
-        // 1. 임시저장 글이었을 경우 임시저장 글 삭제
-        // 권한 체크 후 삭제 진행하는게 맞다고 판단돼서 여기에 위치함
-        if (dto.getParentPostId() != null){
-            Post draft = postRepository.findById(dto.getPostId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        // 1. 임시저장 글이 있을 경우 삭제
+        Post draft = postRepository.findByParentPostId(dto.getPostId()).orElse(null);
+        if (draft != null) {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
             postRepository.delete(draft);
@@ -124,6 +120,44 @@ public class PostService {
 
         post.updateTitle(dto.getTitle());
         return post;
+
+//        Post post;
+//        PostDocument postDocument;
+//        //1. 임시저장 글이었을 경우
+//        if (dto.getParentPostId() != null){
+//            post = postRepository.findById(dto.getParentPostId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+//            postDocument = postDocRepository.findById(post.getDocumentId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+//        }
+//        else { // 2. 바로 수정할 경우
+//            post = postRepository.findById(dto.getPostId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+//            postDocument = postDocRepository.findById(post.getDocumentId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+//        }
+//
+//        //권한 체크. 글 작성자만 수정 가능
+//        if (!post.getUserId().equals(userId)) {
+//            throw new CustomException(ErrorCode.NO_PERMISSION);
+//        }
+//
+//        // 1. 임시저장 글이었을 경우 임시저장 글 삭제
+//        // 권한 체크 후 삭제 진행하는게 맞다고 판단돼서 여기에 위치함
+//        if (dto.getParentPostId() != null){
+//            Post draft = postRepository.findById(dto.getPostId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+//            PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
+//                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+//            postRepository.delete(draft);
+//            postDocRepository.delete(draftDocument);
+//        }
+//
+//        postDocument.updateContent(dto.getContent());
+//        postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
+//
+//        post.updateTitle(dto.getTitle());
+//        return post;
     }
 
 
@@ -164,7 +198,7 @@ public class PostService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         //글 발행 전 임시저장
-        if (dto.getPostId() == null && dto.getParentPostId() == null){
+        if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
             PostDocument postDocument = PostDocument.builder()
                     .content(dto.getContent())
                     .build();
@@ -180,7 +214,7 @@ public class PostService {
             return postRepository.save(post);
         }
         // 글 발행 후 임시저장
-        else if (dto.getPostId() == null){
+        else if (dto.getDraftPostId() == null){
             PostDocument postDocument = PostDocument.builder()
                     .content(dto.getContent())
                     .build();
@@ -198,7 +232,7 @@ public class PostService {
         }
         // 임시저장 글을 또 임시저장
         else {
-            Post draft = postRepository.findById(dto.getPostId())
+            Post draft = postRepository.findById(dto.getDraftPostId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT

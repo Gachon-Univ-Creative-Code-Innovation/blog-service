@@ -1,6 +1,5 @@
 package com.gucci.blog_service.post.service;
 
-import ch.qos.logback.core.testUtil.MockInitialContext;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -11,7 +10,6 @@ import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
-import net.bytebuddy.build.ToStringPlugin;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +51,7 @@ public class PostServiceTest {
      * 게시글
      */
     @Test
-    @DisplayName("게시글 생성 : postId != null (임시저장 후 발행)")
+    @DisplayName("게시글 생성 : draftPostId != null (임시저장 후 발행)")
     void createPostAfterDraft() throws Exception {
         PostRequestDTO.createPost dto = PostRequestDTO.createPost.builder()
                 .postId(1L)
@@ -83,7 +81,7 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 생성 : postId == null (임시저장 하지 않고 발행)")
+    @DisplayName("게시글 생성 : draftPostId == null (임시저장 하지 않고 발행)")
     void createPostTest() throws Exception {
         PostRequestDTO.createPost dto = PostRequestDTO.createPost.builder()
                 .postId(null)
@@ -400,7 +398,7 @@ public class PostServiceTest {
     @DisplayName("임시저장 생성 : 게시글 발행 전")
     public void createDraftBeforePublishTest(){
         PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
-                .postId(null)
+                .draftPostId(null)
                 .parentPostId(null)
                 .content("내용")
                 .title("제목")
@@ -431,7 +429,7 @@ public class PostServiceTest {
     @DisplayName("임시저장 생성 : 게시글 발행 후")
     public void createDraftAfterPublishTest(){
         PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
-                .postId(null)
+                .draftPostId(null)
                 .parentPostId(10L)
                 .content("내용")
                 .title("제목")
@@ -466,14 +464,14 @@ public class PostServiceTest {
     public void createDraftTest() {
         String postDocId = "postDoc";
         PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
-                .postId(1L)
+                .draftPostId(1L)
                 .parentPostId(10L)
                 .content("내용")
                 .title("제목")
                 .build();
 
         Post draft = Post.builder()
-                .postId(request.getPostId())
+                .postId(request.getDraftPostId())
                 .userId(userId)
                 .parentPostId(request.getParentPostId())
                 .documentId(postDocId)
@@ -486,7 +484,7 @@ public class PostServiceTest {
                 .build();
 
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
-        Mockito.when(postRepository.findById(request.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postRepository.findById(request.getDraftPostId())).thenReturn(Optional.of(draft));
         Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
 
         Post result = postService.createDraft(token, request);
@@ -494,7 +492,7 @@ public class PostServiceTest {
         assertThat(result.isDraft()).isTrue();
         assertThat(result.getTitle()).isEqualTo(request.getTitle());
         assertThat(result.getParentPostId()).isEqualTo(request.getParentPostId());
-        assertThat(result.getPostId()).isEqualTo(request.getPostId());
+        assertThat(result.getPostId()).isEqualTo(request.getDraftPostId());
     }
 
     @Test
