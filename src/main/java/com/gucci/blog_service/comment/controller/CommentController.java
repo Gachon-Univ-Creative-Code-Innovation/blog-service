@@ -27,9 +27,9 @@ public class CommentController {
     }
 
     @GetMapping("/{postId}")
-    public ApiResponse<List<CommentResponseDTO.GetComments>> getComments(
+    public ApiResponse<CommentResponseDTO.GetCommentList> getComments(
             @PathVariable Long postId){
-        List<CommentResponseDTO.GetComments> getComments = commentService.getCommentsByPostId(postId);
+        CommentResponseDTO.GetCommentList getComments = commentService.getCommentsByPostId(postId);
         return ApiResponse.success(getComments);
     }
 

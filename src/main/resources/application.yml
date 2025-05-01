@@ -13,7 +13,14 @@ spring:
       hibernate:
         format_sql: true  # SQL 로그 보기 좋게 포맷
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      database: alog
+    #mongodb:
+     # uri: ${LOCAL_MONGODB_URI}
 
 jwt:
   secret: ${JWT_SECRET}

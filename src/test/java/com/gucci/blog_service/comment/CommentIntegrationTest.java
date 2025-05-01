@@ -67,7 +67,7 @@ public class CommentIntegrationTest {
         Post post = Post.builder()
                 .title("통합 테스트 게시글")
                 .userId(userId)
-                .documentId(1L)
+                .documentId("dsffdsdf")
                 .view(0L)
                 .build();
         postRepository.save(post);
