@@ -17,7 +17,7 @@ public class TagService {
 
     private final TagRepository tagRepository;
 
-    //태그 리스트 저장
+    /**태그 리스트 저장*/
     public void createTags(Post post, List<String> tagNameList) {
         //태그 생성
         List<Tag> tagToSave = tagNameList.stream().map(name -> Tag.builder().tagName(name).post(post).build()).toList();
@@ -26,10 +26,12 @@ public class TagService {
         tagRepository.saveAll(tagToSave);
     }
 
+    /**태그 이름 조회*/
     public List<String> getTagNamesByPost(Post post) {
         return tagRepository.findAllByPost(post).stream().map(Tag::getTagName).collect(Collectors.toList());
     }
-    //태그 리스트 업데이트
+
+    /**태그 리스트 업데이트*/
     public void updateByTagNameList(Post post, List<String> newTagNameList) {
         //존재하는 태그
         List<String> existingTags = tagRepository.findAllByPost(post).stream().map(Tag::getTagName).toList();
@@ -47,5 +49,10 @@ public class TagService {
         List<Tag> tags = tagsToAdd.stream().map(tagName -> Tag.builder().tagName(tagName).post(post).build()).toList();
         tagRepository.saveAll(tags);
 
+    }
+
+    /**게시글로 태그 삭제*/
+    public void deleteAllByPost(Post post) {
+        tagRepository.deleteAllByPost(post);
     }
 }
