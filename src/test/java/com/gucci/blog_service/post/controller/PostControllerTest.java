@@ -89,19 +89,19 @@ public class PostControllerTest {
     @Test
     @DisplayName("게시글 수정 테스트")
     void updatePostTest() throws Exception {
+        Long postId = 1L;
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
-                .postId(1L)
                 .title("제목")
                 .content("내용")
                 .build();
 
         Post post = Post.builder()
-                .postId(request.getPostId())
+                .postId(postId)
                 .build();
 
-        Mockito.when(postService.updatePost(anyString(), any())).thenReturn(post);
+        Mockito.when(postService.updatePost(anyString(), anyLong(), any())).thenReturn(post);
 
-        mockMvc.perform(patch("/api/blog-service/posts")
+        mockMvc.perform(patch("/api/blog-service/posts/{postId}", postId)
                 .header("Authorization", token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
