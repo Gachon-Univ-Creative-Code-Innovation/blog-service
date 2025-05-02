@@ -84,6 +84,7 @@ public class PostService {
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
+        List<String> tagNameList = tagService.getTagNamesByPost(post);
 
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
@@ -92,6 +93,7 @@ public class PostService {
                 .view(post.getView())
                 .title(post.getTitle())
                 .content(postDocument.getContent())
+                .tagNameList(tagNameList)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
