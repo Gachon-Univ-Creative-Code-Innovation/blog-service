@@ -71,11 +71,12 @@ public class PostService {
                 .title(dto.getTitle())
                 .isDraft(false)
                 .build();
+        Post savedPost = postRepository.save(post);
 
-        //태그 생성
-        tagService.createTags(post, dto.getTagNameList());
+        //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
+        tagService.createTags(savedPost, dto.getTagNameList());
 
-        return postRepository.save(post);
+        return savedPost;
     }
 
 
@@ -101,13 +102,13 @@ public class PostService {
 
 
     @Transactional
-    public Post updatePost(String token, PostRequestDTO.updatePost dto) {
+    public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Post post;
         PostDocument postDocument;
 
-        post = postRepository.findById(dto.getPostId())
+        post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
@@ -119,7 +120,7 @@ public class PostService {
         }
 
         // 1. 임시저장 글이 있을 경우 삭제
-        Post draft = postRepository.findByParentPostId(dto.getPostId()).orElse(null);
+        Post draft = postRepository.findByParentPostId(postId).orElse(null);
         if (draft != null) {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
