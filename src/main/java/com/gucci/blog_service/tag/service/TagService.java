@@ -39,21 +39,32 @@ public class TagService {
 
     /**태그 리스트 업데이트*/
     public void updateByTagNameList(Post post, List<String> newTagNameList) {
+        if (newTagNameList == null) {
+            newTagNameList = Collections.emptyList();
+        }
         //존재하는 태그
-        List<String> existingTags = tagRepository.findAllByPost(post).stream().map(Tag::getTagName).toList();
+        List<Tag> existingTags = tagRepository.findAllByPost(post);
+        List<String> existingTagNames = existingTags.stream().map(Tag::getTagName).toList();
 
         //삭제할 태그
-        List<String> tagsToDelete = existingTags.stream().filter(tagName -> !newTagNameList.contains(tagName)).toList();
+        List<String> finalNewTagNameList = newTagNameList; // final 변수로 선언
+        List<String> tagsToDelete = existingTagNames.stream().filter(tagName -> !finalNewTagNameList.contains(tagName)).toList();
 
         //추가할 태그
-        List<String> tagsToAdd = newTagNameList.stream().filter(tagName -> !existingTags.contains(tagName)).toList();
+        List<String> tagsToAdd = finalNewTagNameList.stream().filter(tagName -> !existingTagNames.contains(tagName)).toList();
 
         // post에 연결된 tag중 tagsToDelete에 포함되는 태그 삭제
-        tagRepository.deleteByPostAndTagNameIn(post, tagsToDelete);
+        if (!tagsToDelete.isEmpty()) {
+            tagRepository.deleteByPostAndTagNameIn(post, tagsToDelete);
+        }
 
         //태그 저장
-        List<Tag> tags = tagsToAdd.stream().map(tagName -> Tag.builder().tagName(tagName).post(post).build()).toList();
-        tagRepository.saveAll(tags);
+        if (!tagsToAdd.isEmpty()) {
+            List<Tag> tags = tagsToAdd.stream()
+                    .map(tagName -> Tag.builder().tagName(tagName).post(post).build())
+                    .toList();
+            tagRepository.saveAll(tags);
+        }
 
     }
 

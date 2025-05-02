@@ -71,6 +71,7 @@ public class PostIntegrationTest {
                 .title("임시저장 제목")
                 .content("임시저장 내용")
                 .build();
+
         MvcResult createDraftResult = mockMvc.perform(post("/api/blog-service/posts/drafts")
                     .header("Authorization", token)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -232,6 +233,7 @@ public class PostIntegrationTest {
         PostRequestDTO.createPost createPost = PostRequestDTO.createPost.builder()
                 .title("최초 발행 제목")
                 .content("최초 발행 내용")
+                .tagNameList(List.of("tag1", "tag2"))
                 .build();
 
         MvcResult publishResult = mockMvc.perform(post("/api/blog-service/posts")
@@ -252,12 +254,15 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.status").value("OK"))
                 .andExpect(jsonPath("$.data.postId").value(postId))
                 .andExpect(jsonPath("$.data.title").value("최초 발행 제목"))
-                .andExpect(jsonPath("$.data.content").value("최초 발행 내용"));
+                .andExpect(jsonPath("$.data.content").value("최초 발행 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag2"));
 
         // 3. 수정
         PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
                 .title("수정된 제목")
                 .content("수정된 내용")
+                .tagNameList(List.of("tag1", "tag3"))
                 .build();
 
         mockMvc.perform(patch("/api/blog-service/posts/{postId}", postId)
@@ -272,7 +277,9 @@ public class PostIntegrationTest {
                         .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("수정된 제목"))
-                .andExpect(jsonPath("$.data.content").value("수정된 내용"));
+                .andExpect(jsonPath("$.data.content").value("수정된 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag3"));
 
         // 4. 삭제
         mockMvc.perform(delete("/api/blog-service/posts/{postId}", postId)

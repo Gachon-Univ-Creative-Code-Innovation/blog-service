@@ -8,6 +8,7 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
+import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ public class PostServiceTest {
 
     @Mock
     private CommentRefService commentRefService;
+
+    @Mock
+    private TagService tagService;
 
     @Mock
     private JwtTokenHelper jwtTokenHelper;
