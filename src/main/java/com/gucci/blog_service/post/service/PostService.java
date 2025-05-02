@@ -8,6 +8,7 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
+import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
@@ -27,6 +28,7 @@ public class PostService {
 
 
     private final CommentRefService commentRefService;
+    private final TagService tagService;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -44,9 +46,14 @@ public class PostService {
             PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
 
+            //태그 업데이트
+            tagService.updateByTagNameList(post, dto.getTagNameList());
+
+            //postDoc 업데이트
             postDocument.updateContent(dto.getContent());
             postDocRepository.save(postDocument);
 
+            //post 업데이트
             post.publish(dto.getTitle());
             return postRepository.save(post);
         }
@@ -64,6 +71,9 @@ public class PostService {
                 .title(dto.getTitle())
                 .isDraft(false)
                 .build();
+
+        //태그 생성
+        tagService.createTags(post, dto.getTagNameList());
 
         return postRepository.save(post);
     }
