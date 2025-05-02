@@ -165,13 +165,12 @@ public class PostIntegrationTest {
 
         // 7. 임시저장 글로 게시글 수정
         PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
-                .postId(postId)
 //                .parentPostId(postId)
                 .title("수정된 제목")
                 .content("수정된 내용")
                 .build();
 
-        MvcResult updateResult = mockMvc.perform(patch("/api/blog-service/posts")
+        MvcResult updateResult = mockMvc.perform(patch("/api/blog-service/posts/{postId}", postId)
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePost)))
@@ -257,12 +256,11 @@ public class PostIntegrationTest {
 
         // 3. 수정
         PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
-                .postId(postId)
                 .title("수정된 제목")
                 .content("수정된 내용")
                 .build();
 
-        mockMvc.perform(patch("/api/blog-service/posts", postId)
+        mockMvc.perform(patch("/api/blog-service/posts/{postId}", postId)
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePost)))
