@@ -17,10 +17,12 @@ public class PostResponseDTO {
         String title;
         String content;
         Long view;
+        List<String> tagNameList;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
-        //todo : tag, category
+        //todo : category
     }
+
 
     @Builder
     @Getter

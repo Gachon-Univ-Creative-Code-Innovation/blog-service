@@ -26,6 +26,9 @@ public class TagService {
         tagRepository.saveAll(tagToSave);
     }
 
+    public List<String> getTagNamesByPost(Post post) {
+        return tagRepository.findAllByPost(post).stream().map(Tag::getTagName).collect(Collectors.toList());
+    }
     //태그 리스트 업데이트
     public void updateByTagNameList(Post post, List<String> newTagNameList) {
         //존재하는 태그
