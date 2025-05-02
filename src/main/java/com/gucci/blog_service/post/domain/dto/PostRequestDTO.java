@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class PostRequestDTO {
     @Getter
     @Builder
@@ -14,6 +16,7 @@ public class PostRequestDTO {
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
+        List<String> tagNameList;
         //todo : tag, category
     }
 
@@ -40,4 +43,5 @@ public class PostRequestDTO {
         String content;
         //todo : tag. category
     }
+
 }
