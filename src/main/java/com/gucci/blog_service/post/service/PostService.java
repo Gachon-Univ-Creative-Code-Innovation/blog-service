@@ -127,9 +127,14 @@ public class PostService {
             postDocRepository.delete(draftDocument);
         }
 
+        //Doc 업데이트
         postDocument.updateContent(dto.getContent());
         postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
 
+        //tag 업데이트
+        tagService.updateByTagNameList(post, dto.getTagNameList());
+
+        //Post 업데이트
         post.updateTitle(dto.getTitle());
         return post;
     }
