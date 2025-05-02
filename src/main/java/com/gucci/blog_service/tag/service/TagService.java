@@ -4,11 +4,14 @@ import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.tag.domain.Tag;
 import com.gucci.blog_service.tag.repository.TagRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,9 +21,12 @@ public class TagService {
     private final TagRepository tagRepository;
 
     /**태그 리스트 저장*/
+    @Transactional
     public void createTags(Post post, List<String> tagNameList) {
         //태그 생성
-        List<Tag> tagToSave = tagNameList.stream().map(name -> Tag.builder().tagName(name).post(post).build()).toList();
+        List<Tag> tagToSave = Optional.ofNullable(tagNameList)
+                .orElse(Collections.emptyList())
+                .stream().map(name -> Tag.builder().tagName(name).post(post).build()).toList();
 
         //태그 저장
         tagRepository.saveAll(tagToSave);
