@@ -158,11 +158,13 @@ public class PostService {
         if (draft != null) {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
+            tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDoc);
         }
 
-        //글 삭제
+        //댓글, 태그, Doc, Post 삭제
+        tagService.deleteAllByPost(post);
         commentRefService.deleteAllByPost(post);
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
