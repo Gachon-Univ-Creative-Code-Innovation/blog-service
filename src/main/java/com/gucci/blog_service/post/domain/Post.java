@@ -1,11 +1,14 @@
 package com.gucci.blog_service.post.domain;
 
+import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.config.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -34,6 +37,11 @@ public class Post extends BaseEntity { //todo: user연결하기
 
     @Column(columnDefinition = "boolean default false", nullable = false)
     private boolean isDraft = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Category category;
 
     public void updateTitle(String title) {
         this.title = title;
