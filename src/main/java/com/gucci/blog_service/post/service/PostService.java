@@ -59,8 +59,8 @@ public class PostService {
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
             //post 업데이트
-            post.updateCategory(category);
-            post.publish(dto.getTitle());
+            post.update(dto.getTitle(), category);
+            post.publish();
             return postRepository.save(post);
         }
 
@@ -134,6 +134,8 @@ public class PostService {
         if (draft != null) {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+
+            tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDocument);
         }
@@ -145,8 +147,10 @@ public class PostService {
         //tag 업데이트
         tagService.updateByTagNameList(post, dto.getTagNameList());
 
+        Category category = categoryService.getCategory(dto.getCategoryCode());
+
         //Post 업데이트
-        post.updateTitle(dto.getTitle());
+        post.update(dto.getTitle(), category);
         return post;
     }
 
