@@ -289,11 +289,13 @@ public class PostService {
                             if (postDocument == null) {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
+                            List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseDTO.GetDraft.builder()
                                     .draftPostId(post.getPostId())
                                     .title(post.getTitle())
                                     .content(postDocument.getContent())
+                                    .tagNameList(tagNameList)
                                     .updatedAt(post.getUpdatedAt())
                                     .createdAt(post.getCreatedAt())
                                     .build();

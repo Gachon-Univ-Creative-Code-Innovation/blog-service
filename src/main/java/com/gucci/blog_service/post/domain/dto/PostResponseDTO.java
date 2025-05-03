@@ -45,6 +45,7 @@ public class PostResponseDTO {
         Long draftPostId;
         String title;
         String content;
+        List<String> tagNameList;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
     }
