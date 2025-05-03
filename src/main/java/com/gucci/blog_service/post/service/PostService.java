@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -57,7 +56,7 @@ public class PostService {
             postDocument.updateContent(dto.getContent());
             postDocRepository.save(postDocument);
 
-            Category category = categoryService.getCategory(dto.getCategoryId());
+            Category category = categoryService.getCategory(dto.getCategoryCode());
 
             //post 업데이트
             post.updateCategory(category);
@@ -66,7 +65,7 @@ public class PostService {
         }
 
         // 새로 작성한 글인 경우
-        Category category = categoryService.getCategory(dto.getCategoryId());
+        Category category = categoryService.getCategory(dto.getCategoryCode());
 
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())

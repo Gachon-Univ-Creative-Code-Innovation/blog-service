@@ -16,7 +16,13 @@ public class CategoryService {
     public Category getCategory(Long id) {
         if (id == null) {
             return categoryRepository.findById(CategoryType.ETC.getCode())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                    .orElseGet(() -> {
+                        Category etcCategory = Category.builder()
+                                .categoryId(CategoryType.ETC.getCode())
+                                .name(CategoryType.ETC)
+                                .build();
+                        return categoryRepository.save(etcCategory);
+                    });
         }
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
