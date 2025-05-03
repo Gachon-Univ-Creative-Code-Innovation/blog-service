@@ -21,4 +21,5 @@ public class CategoryService {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
+
 }

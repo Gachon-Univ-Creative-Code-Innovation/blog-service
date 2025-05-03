@@ -18,6 +18,7 @@ public class PostResponseDTO {
         String content;
         Long view;
         List<String> tagNameList;
+        Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
         //todo : category

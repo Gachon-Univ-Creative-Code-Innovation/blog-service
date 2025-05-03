@@ -20,7 +20,7 @@ public class CategoryInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if(categoryRepository.count() == 0) {
             Arrays.stream(CategoryType.values()).forEach(type -> {
-                categoryRepository.save(Category.builder().name(type.name()).build());
+                categoryRepository.save(Category.builder().categoryId(type.getCode()).name(type).build());
             });
         }
     }

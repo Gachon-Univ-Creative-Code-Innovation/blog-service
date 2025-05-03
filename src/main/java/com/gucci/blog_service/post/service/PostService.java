@@ -105,6 +105,7 @@ public class PostService {
                 .title(post.getTitle())
                 .content(postDocument.getContent())
                 .tagNameList(tagNameList)
+                .categoryCode(post.getCategory().getName().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
