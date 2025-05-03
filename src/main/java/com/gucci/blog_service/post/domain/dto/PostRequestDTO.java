@@ -28,7 +28,6 @@ public class PostRequestDTO {
         String content;
         List<String> tagNameList;
         Long categoryCode;
-        //todo : category
     }
 
     @Getter
@@ -41,7 +40,7 @@ public class PostRequestDTO {
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
         List<String> tagNameList;
-        //todo : category
+        Long categoryCode;
     }
 
 }
