@@ -308,6 +308,7 @@ public class PostService {
     }
 
 
+    @Transactional
     public void deleteDraft(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 

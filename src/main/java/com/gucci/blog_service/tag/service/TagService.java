@@ -69,6 +69,7 @@ public class TagService {
     }
 
     /**게시글로 태그 삭제*/
+    @Transactional
     public void deleteAllByPost(Post post) {
         tagRepository.deleteAllByPost(post);
     }

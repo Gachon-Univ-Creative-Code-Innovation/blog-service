@@ -62,7 +62,7 @@ public class PostIntegrationTest {
     }
 
     @Test
-    @DisplayName("임시저장 -> 임시저장 조회 -> 임시저장 -> 발행 -> 조회 -> 임시저장 -> 수정 -> 임시저장 -> 삭제")
+    @DisplayName("임시저장 -> 임시저장 조회 -> 임시저장  -> 발행 -> 조회 -> 임시저장 -> 수정 -> 임시저장 -> 삭제")
     void fullDraftPostTest() throws Exception {
         // 1. 임시저장 생성
         PostRequestDTO.createDraft createDraft = PostRequestDTO.createDraft.builder()
@@ -70,6 +70,7 @@ public class PostIntegrationTest {
                 .parentPostId(null)
                 .title("임시저장 제목")
                 .content("임시저장 내용")
+                .tagNameList(List.of("tag1", "tag2"))
                 .build();
 
         MvcResult createDraftResult = mockMvc.perform(post("/api/blog-service/posts/drafts")
@@ -91,14 +92,17 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.data.parentPostId").isEmpty())
                 .andExpect(jsonPath("$.data.authorId").value(userId))
                 .andExpect(jsonPath("$.data.title").value("임시저장 제목"))
-                .andExpect(jsonPath("$.data.content").value("임시저장 내용"));
+                .andExpect(jsonPath("$.data.content").value("임시저장 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag2"));
 
-        // 3. 임시저장
+        // 3. 임시저장 수정
         PostRequestDTO.createDraft createDraft2 = PostRequestDTO.createDraft.builder()
                 .draftPostId(draftId)
                 .parentPostId(null)
                 .title("임시저장2 제목")
                 .content("임시저장2 내용")
+                .tagNameList(List.of("tag1", "tag3"))
                 .build();
         MvcResult createDraftResult2 = mockMvc.perform(post("/api/blog-service/posts/drafts")
                         .header("Authorization", token)
@@ -113,11 +117,25 @@ public class PostIntegrationTest {
 
         assertThat(draft2Id).isEqualTo(draftId);
 
+        // 3-2. 임시저장 조회
+        mockMvc.perform(get("/api/blog-service/posts/drafts/{draftPostId}", draft2Id)
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.data.draftPostId").value(draftId))
+                .andExpect(jsonPath("$.data.parentPostId").isEmpty())
+                .andExpect(jsonPath("$.data.authorId").value(userId))
+                .andExpect(jsonPath("$.data.title").value("임시저장2 제목"))
+                .andExpect(jsonPath("$.data.content").value("임시저장2 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag3"));
+
         // 4. 발행
         PostRequestDTO.createPost createPost = PostRequestDTO.createPost.builder()
                 .postId(draftId)
                 .content("최종 게시글 내용")
                 .title("최종 게시글 제목")
+                .tagNameList(List.of("tag1", "tag4"))
                 .build();
 
         MvcResult createPostResult = mockMvc.perform(post("/api/blog-service/posts")
@@ -140,7 +158,9 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.status").value("OK"))
                 .andExpect(jsonPath("$.data.postId").value(postId))
                 .andExpect(jsonPath("$.data.title").value("최종 게시글 제목"))
-                .andExpect(jsonPath("$.data.content").value("최종 게시글 내용"));
+                .andExpect(jsonPath("$.data.content").value("최종 게시글 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag4"));
 
 
         // 6. 임시저장
@@ -149,6 +169,7 @@ public class PostIntegrationTest {
                 .parentPostId(postId)
                 .title("임시저장3 제목")
                 .content("임시저장3 내용")
+                .tagNameList(List.of("tag1", "tag3"))
                 .build();
         MvcResult createDraftResult3 = mockMvc.perform(post("/api/blog-service/posts/drafts")
                         .header("Authorization", token)
@@ -169,6 +190,7 @@ public class PostIntegrationTest {
 //                .parentPostId(postId)
                 .title("수정된 제목")
                 .content("수정된 내용")
+                .tagNameList(List.of("tag1", "tag3"))
                 .build();
 
         MvcResult updateResult = mockMvc.perform(patch("/api/blog-service/posts/{postId}", postId)
@@ -196,7 +218,9 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.status").value("OK"))
                 .andExpect(jsonPath("$.data.postId").value(updatedPostId))
                 .andExpect(jsonPath("$.data.title").value("수정된 제목"))
-                .andExpect(jsonPath("$.data.content").value("수정된 내용"));
+                .andExpect(jsonPath("$.data.content").value("수정된 내용"))
+                .andExpect(jsonPath("$.data.tagNameList[0]").value("tag1"))
+                .andExpect(jsonPath("$.data.tagNameList[1]").value("tag3"));
 
 
         // 9. 임시저장
@@ -205,6 +229,7 @@ public class PostIntegrationTest {
                 .parentPostId(postId)
                 .title("임시저장4 제목")
                 .content("임시저장4 내용")
+                .tagNameList(List.of("tag4"))
                 .build();
         MvcResult createDraftResult4 = mockMvc.perform(post("/api/blog-service/posts/drafts")
                         .header("Authorization", token)
