@@ -46,6 +46,7 @@ public class PostResponseDTO {
         String title;
         String content;
         List<String> tagNameList;
+        Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
     }
