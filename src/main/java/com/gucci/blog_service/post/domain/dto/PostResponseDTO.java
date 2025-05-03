@@ -21,7 +21,6 @@ public class PostResponseDTO {
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
-        //todo : category
     }
 
 
@@ -35,9 +34,9 @@ public class PostResponseDTO {
         String title;
         String content;
         List<String> tagNameList;
+        Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
-        //todo : tag, category
     }
 
     @Builder
