@@ -200,12 +200,15 @@ public class PostService {
                     .build();
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             Post post = Post.builder()
                     .view(0L)
                     .documentId(postDocument.getId())
                     .userId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
+                    .category(category)
                     .build();
             Post savedPost = postRepository.save(post);
 
@@ -221,6 +224,8 @@ public class PostService {
                     .build();
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             Post post = Post.builder()
                     .view(0L)
                     .parentPostId(dto.getParentPostId())
@@ -228,6 +233,7 @@ public class PostService {
                     .userId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
+                    .category(category)
                     .build();
             Post savedPost = postRepository.save(post);
 
@@ -241,10 +247,12 @@ public class PostService {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             tagService.updateByTagNameList(draft, dto.getTagNameList());
             draftDoc.updateContent(dto.getContent());
             postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
-            draft.updateTitle(dto.getTitle());
+            draft.update(dto.getTitle(), category);
 
             return draft;
         }
