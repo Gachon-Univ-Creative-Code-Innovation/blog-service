@@ -1,5 +1,7 @@
 package com.gucci.blog_service.post.service;
 
+import com.gucci.blog_service.category.domain.Category;
+import com.gucci.blog_service.category.service.CategoryService;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -15,7 +17,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -30,6 +31,7 @@ public class PostService {
 
     private final CommentRefService commentRefService;
     private final TagService tagService;
+    private final CategoryService categoryService;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -54,12 +56,17 @@ public class PostService {
             postDocument.updateContent(dto.getContent());
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             //post 업데이트
-            post.publish(dto.getTitle());
+            post.update(dto.getTitle(), category);
+            post.publish();
             return postRepository.save(post);
         }
 
         // 새로 작성한 글인 경우
+        Category category = categoryService.getCategory(dto.getCategoryCode());
+
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())
                 .build();
@@ -71,6 +78,7 @@ public class PostService {
                 .userId(userId)
                 .title(dto.getTitle())
                 .isDraft(false)
+                .category(category)
                 .build();
         Post savedPost = postRepository.save(post);
 
@@ -96,6 +104,7 @@ public class PostService {
                 .title(post.getTitle())
                 .content(postDocument.getContent())
                 .tagNameList(tagNameList)
+                .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
@@ -125,6 +134,8 @@ public class PostService {
         if (draft != null) {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+
+            tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDocument);
         }
@@ -136,8 +147,10 @@ public class PostService {
         //tag 업데이트
         tagService.updateByTagNameList(post, dto.getTagNameList());
 
+        Category category = categoryService.getCategory(dto.getCategoryCode());
+
         //Post 업데이트
-        post.updateTitle(dto.getTitle());
+        post.update(dto.getTitle(), category);
         return post;
     }
 
@@ -187,12 +200,15 @@ public class PostService {
                     .build();
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             Post post = Post.builder()
                     .view(0L)
                     .documentId(postDocument.getId())
                     .userId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
+                    .category(category)
                     .build();
             Post savedPost = postRepository.save(post);
 
@@ -208,6 +224,8 @@ public class PostService {
                     .build();
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             Post post = Post.builder()
                     .view(0L)
                     .parentPostId(dto.getParentPostId())
@@ -215,6 +233,7 @@ public class PostService {
                     .userId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
+                    .category(category)
                     .build();
             Post savedPost = postRepository.save(post);
 
@@ -228,10 +247,12 @@ public class PostService {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
             tagService.updateByTagNameList(draft, dto.getTagNameList());
             draftDoc.updateContent(dto.getContent());
             postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
-            draft.updateTitle(dto.getTitle());
+            draft.update(dto.getTitle(), category);
 
             return draft;
         }
@@ -263,6 +284,7 @@ public class PostService {
                 .authorNickname("임시")
                 .content(postDocument.getContent())
                 .tagNameList(tagNameList)
+                .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
@@ -296,6 +318,7 @@ public class PostService {
                                     .title(post.getTitle())
                                     .content(postDocument.getContent())
                                     .tagNameList(tagNameList)
+                                    .categoryCode(post.getCategory().getCategoryType().getCode())
                                     .updatedAt(post.getUpdatedAt())
                                     .createdAt(post.getCreatedAt())
                                     .build();

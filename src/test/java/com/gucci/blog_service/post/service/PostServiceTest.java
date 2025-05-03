@@ -1,5 +1,8 @@
 package com.gucci.blog_service.post.service;
 
+import com.gucci.blog_service.category.domain.Category;
+import com.gucci.blog_service.category.domain.type.CategoryType;
+import com.gucci.blog_service.category.service.CategoryService;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -46,11 +49,21 @@ public class PostServiceTest {
     private TagService tagService;
 
     @Mock
+    private CategoryService categoryService;
+
+    @Mock
     private JwtTokenHelper jwtTokenHelper;
 
     private final Long userId = 1L;
     private final String token = "Bearer test-token";
-
+    private final Category defaultCategory = Category.builder()
+            .categoryId(CategoryType.ETC.getCode())
+            .categoryType(CategoryType.ETC)
+            .build();
+    private final Category category = Category.builder()
+            .categoryId(CategoryType.AI.getCode())
+            .categoryType(CategoryType.AI)
+            .build();
     /**
      * 게시글
      */
@@ -140,6 +153,7 @@ public class PostServiceTest {
                 .userId(userId)
                 .title("제목")
                 .isDraft(false)
+                .category(category)
                 .build();
 
         Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -512,6 +526,7 @@ public class PostServiceTest {
                 .documentId(postDocId)
                 .isDraft(true)
                 .title("제목")
+                .category(category)
                 .build();
         PostDocument draftDoc = PostDocument.builder()
                 .id(postDocId)
@@ -594,6 +609,7 @@ public class PostServiceTest {
                 .documentId("postDocId")
                 .isDraft(true)
                 .title("제목")
+                .category(category)
                 .build();
         Post draft2 = Post.builder()
                 .postId(2L)
@@ -601,6 +617,7 @@ public class PostServiceTest {
                 .documentId("postDocId2")
                 .isDraft(true)
                 .title("제목")
+                .category(category)
                 .build();
         Post nonDraftPost = Post.builder()
                 .postId(103L)
@@ -608,6 +625,7 @@ public class PostServiceTest {
                 .title("Published Post")
                 .documentId("doc3")
                 .isDraft(false)
+                .category(category)
                 .build();
 
         PostDocument draftDoc = PostDocument.builder()
