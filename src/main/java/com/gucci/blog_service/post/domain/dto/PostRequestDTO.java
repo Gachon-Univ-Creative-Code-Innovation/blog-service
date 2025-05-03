@@ -5,28 +5,30 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class PostRequestDTO {
     @Getter
     @Builder
     public static class createPost{
-        Long postId;
+        Long postId; //임시저장 글로 생성할 경우 draftpostId. 아니면 null
         @NotBlank(message = "제목은 필수입니다.")
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
+        List<String> tagNameList;
         //todo : tag, category
     }
 
     @Getter
     @Builder
     public static class updatePost{
-        @NotNull(message = "post id 값은 필수입니다.")
-        Long postId; // 발행된 postId, draft를 이용해 수정할 경의 draft의 paerentpostId
         @NotBlank(message = "제목은 필수입니다.")
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
-        //todo : tag. category
+        List<String> tagNameList;
+        //todo : category
     }
 
     @Getter
@@ -38,6 +40,8 @@ public class PostRequestDTO {
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
-        //todo : tag. category
+        List<String> tagNameList;
+        //todo : category
     }
+
 }
