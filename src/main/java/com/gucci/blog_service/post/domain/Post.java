@@ -46,11 +46,12 @@ public class Post extends BaseEntity { //todo: user연결하기
     public void updateTitle(String title) {
         this.title = title;
     }
-    public void updateCategory(Category category) {
+
+    public void update(String title, Category category) {
+        this.title = title;
         this.category = category;
     }
-    public void publish(String title) {
-        this.title = title;
+    public void publish() {
         this.isDraft = false;
     }
 }
