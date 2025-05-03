@@ -320,6 +320,7 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
+        tagService.deleteAllByPost(post);
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
     }
