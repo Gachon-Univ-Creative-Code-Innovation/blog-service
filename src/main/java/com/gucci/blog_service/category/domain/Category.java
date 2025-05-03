@@ -1,10 +1,8 @@
 package com.gucci.blog_service.category.domain;
 
+import com.gucci.blog_service.category.domain.type.CategoryType;
 import com.gucci.blog_service.config.common.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,8 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Category {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
-    private String name;
+    @Enumerated(EnumType.STRING) // CategoryType을 DB에 문자열로 저장
+    private CategoryType name;
 }
