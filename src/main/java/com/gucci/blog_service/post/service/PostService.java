@@ -1,5 +1,7 @@
 package com.gucci.blog_service.post.service;
 
+import com.gucci.blog_service.category.domain.Category;
+import com.gucci.blog_service.category.service.CategoryService;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -30,6 +32,7 @@ public class PostService {
 
     private final CommentRefService commentRefService;
     private final TagService tagService;
+    private final CategoryService categoryService;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -54,12 +57,17 @@ public class PostService {
             postDocument.updateContent(dto.getContent());
             postDocRepository.save(postDocument);
 
+            Category category = categoryService.getCategory(dto.getCategoryId());
+
             //post 업데이트
+            post.updateCategory(category);
             post.publish(dto.getTitle());
             return postRepository.save(post);
         }
 
         // 새로 작성한 글인 경우
+        Category category = categoryService.getCategory(dto.getCategoryId());
+
         PostDocument postDocument = PostDocument.builder()
                 .content(dto.getContent())
                 .build();
@@ -71,6 +79,7 @@ public class PostService {
                 .userId(userId)
                 .title(dto.getTitle())
                 .isDraft(false)
+                .category(category)
                 .build();
         Post savedPost = postRepository.save(post);
 
