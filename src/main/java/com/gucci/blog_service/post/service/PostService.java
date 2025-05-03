@@ -104,7 +104,7 @@ public class PostService {
                 .title(post.getTitle())
                 .content(postDocument.getContent())
                 .tagNameList(tagNameList)
-                .categoryCode(post.getCategory().getName().getCode())
+                .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
@@ -284,6 +284,7 @@ public class PostService {
                 .authorNickname("임시")
                 .content(postDocument.getContent())
                 .tagNameList(tagNameList)
+                .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();

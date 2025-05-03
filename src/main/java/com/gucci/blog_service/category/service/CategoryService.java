@@ -19,7 +19,7 @@ public class CategoryService {
                     .orElseGet(() -> {
                         Category etcCategory = Category.builder()
                                 .categoryId(CategoryType.ETC.getCode())
-                                .name(CategoryType.ETC)
+                                .categoryType(CategoryType.ETC)
                                 .build();
                         return categoryRepository.save(etcCategory);
                     });

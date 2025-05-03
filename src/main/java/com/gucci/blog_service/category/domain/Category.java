@@ -18,5 +18,5 @@ public class Category {
     private Long categoryId;
 
     @Enumerated(EnumType.STRING) // CategoryType을 DB에 문자열로 저장
-    private CategoryType name;
+    private CategoryType categoryType;
 }
