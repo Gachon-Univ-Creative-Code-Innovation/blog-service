@@ -40,7 +40,8 @@ public class PostRequestDTO {
         String title;
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
-        //todo : tag. category
+        List<String> tagNameList;
+        //todo : category
     }
 
 }

@@ -193,7 +193,12 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .build();
-            return postRepository.save(post);
+            Post savedPost = postRepository.save(post);
+
+            //태그저장
+            tagService.createTags(savedPost, dto.getTagNameList());
+
+            return savedPost;
         }
         // 글 발행 후 임시저장
         else if (dto.getDraftPostId() == null){
@@ -210,7 +215,10 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .build();
-            return postRepository.save(post);
+            Post savedPost = postRepository.save(post);
+
+            tagService.createTags(savedPost, dto.getTagNameList());
+            return savedPost;
         }
         // 임시저장 글을 또 임시저장
         else {
@@ -219,6 +227,7 @@ public class PostService {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+            tagService.updateByTagNameList(draft, dto.getTagNameList());
             draftDoc.updateContent(dto.getContent());
             postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
             draft.updateTitle(dto.getTitle());
