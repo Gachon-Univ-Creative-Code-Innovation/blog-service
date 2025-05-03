@@ -33,6 +33,7 @@ public class PostResponseDTO {
         String authorNickname;
         String title;
         String content;
+        List<String> tagNameList;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
         //todo : tag, category

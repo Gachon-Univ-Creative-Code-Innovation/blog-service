@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -252,6 +253,8 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
+        List<String> tagNameList = tagService.getTagNamesByPost(post);
+
         return PostResponseDTO.GetDraftDetail.builder()
                 .draftPostId(post.getPostId())
                 .parentPostId(post.getParentPostId())
@@ -259,6 +262,7 @@ public class PostService {
                 .title(post.getTitle())
                 .authorNickname("임시")
                 .content(postDocument.getContent())
+                .tagNameList(tagNameList)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
