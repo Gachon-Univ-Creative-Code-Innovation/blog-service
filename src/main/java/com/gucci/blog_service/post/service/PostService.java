@@ -8,12 +8,14 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
+import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,6 +29,7 @@ public class PostService {
 
 
     private final CommentRefService commentRefService;
+    private final TagService tagService;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -44,9 +47,14 @@ public class PostService {
             PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
 
+            //태그 업데이트
+            tagService.updateByTagNameList(post, dto.getTagNameList());
+
+            //postDoc 업데이트
             postDocument.updateContent(dto.getContent());
             postDocRepository.save(postDocument);
 
+            //post 업데이트
             post.publish(dto.getTitle());
             return postRepository.save(post);
         }
@@ -64,8 +72,12 @@ public class PostService {
                 .title(dto.getTitle())
                 .isDraft(false)
                 .build();
+        Post savedPost = postRepository.save(post);
 
-        return postRepository.save(post);
+        //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
+        tagService.createTags(savedPost, dto.getTagNameList());
+
+        return savedPost;
     }
 
 
@@ -74,6 +86,7 @@ public class PostService {
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
+        List<String> tagNameList = tagService.getTagNamesByPost(post);
 
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
@@ -82,6 +95,7 @@ public class PostService {
                 .view(post.getView())
                 .title(post.getTitle())
                 .content(postDocument.getContent())
+                .tagNameList(tagNameList)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
@@ -89,13 +103,13 @@ public class PostService {
 
 
     @Transactional
-    public Post updatePost(String token, PostRequestDTO.updatePost dto) {
+    public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Post post;
         PostDocument postDocument;
 
-        post = postRepository.findById(dto.getPostId())
+        post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
@@ -107,7 +121,7 @@ public class PostService {
         }
 
         // 1. 임시저장 글이 있을 경우 삭제
-        Post draft = postRepository.findByParentPostId(dto.getPostId()).orElse(null);
+        Post draft = postRepository.findByParentPostId(postId).orElse(null);
         if (draft != null) {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
@@ -115,9 +129,14 @@ public class PostService {
             postDocRepository.delete(draftDocument);
         }
 
+        //Doc 업데이트
         postDocument.updateContent(dto.getContent());
         postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
 
+        //tag 업데이트
+        tagService.updateByTagNameList(post, dto.getTagNameList());
+
+        //Post 업데이트
         post.updateTitle(dto.getTitle());
         return post;
     }
@@ -141,11 +160,13 @@ public class PostService {
         if (draft != null) {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
+            tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDoc);
         }
 
-        //글 삭제
+        //댓글, 태그, Doc, Post 삭제
+        tagService.deleteAllByPost(post);
         commentRefService.deleteAllByPost(post);
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
@@ -173,7 +194,12 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .build();
-            return postRepository.save(post);
+            Post savedPost = postRepository.save(post);
+
+            //태그저장
+            tagService.createTags(savedPost, dto.getTagNameList());
+
+            return savedPost;
         }
         // 글 발행 후 임시저장
         else if (dto.getDraftPostId() == null){
@@ -190,7 +216,10 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .build();
-            return postRepository.save(post);
+            Post savedPost = postRepository.save(post);
+
+            tagService.createTags(savedPost, dto.getTagNameList());
+            return savedPost;
         }
         // 임시저장 글을 또 임시저장
         else {
@@ -199,6 +228,7 @@ public class PostService {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+            tagService.updateByTagNameList(draft, dto.getTagNameList());
             draftDoc.updateContent(dto.getContent());
             postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
             draft.updateTitle(dto.getTitle());
@@ -223,6 +253,8 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
+        List<String> tagNameList = tagService.getTagNamesByPost(post);
+
         return PostResponseDTO.GetDraftDetail.builder()
                 .draftPostId(post.getPostId())
                 .parentPostId(post.getParentPostId())
@@ -230,6 +262,7 @@ public class PostService {
                 .title(post.getTitle())
                 .authorNickname("임시")
                 .content(postDocument.getContent())
+                .tagNameList(tagNameList)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
@@ -256,11 +289,13 @@ public class PostService {
                             if (postDocument == null) {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
+                            List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseDTO.GetDraft.builder()
                                     .draftPostId(post.getPostId())
                                     .title(post.getTitle())
                                     .content(postDocument.getContent())
+                                    .tagNameList(tagNameList)
                                     .updatedAt(post.getUpdatedAt())
                                     .createdAt(post.getCreatedAt())
                                     .build();
@@ -273,6 +308,7 @@ public class PostService {
     }
 
 
+    @Transactional
     public void deleteDraft(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
@@ -285,6 +321,7 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
+        tagService.deleteAllByPost(post);
         postRepository.delete(post);
         postDocRepository.delete(postDocument);
     }

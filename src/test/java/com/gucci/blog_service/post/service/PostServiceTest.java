@@ -8,6 +8,7 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
+import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ public class PostServiceTest {
 
     @Mock
     private CommentRefService commentRefService;
+
+    @Mock
+    private TagService tagService;
 
     @Mock
     private JwtTokenHelper jwtTokenHelper;
@@ -160,7 +164,6 @@ public class PostServiceTest {
         String postDocId = "postDoc";
 
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
-                .postId(postId)
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
@@ -191,17 +194,17 @@ public class PostServiceTest {
         //목객체
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
         //원본 찾고
-        Mockito.when(postRepository.findById(request.getPostId())).thenReturn(Optional.of(post));
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         Mockito.when(postDocRepository.findById(post.getDocumentId())).thenReturn(Optional.of(postDoc));
         //임시 저장 찾고
-        Mockito.when(postRepository.findByParentPostId(request.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postRepository.findByParentPostId(postId)).thenReturn(Optional.of(draft));
         Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftDoc));
 
         //when
-        Post result = postService.updatePost(token, request);
+        Post result = postService.updatePost(token, postId, request);
 
         //then
-        assertThat(result.getPostId()).isEqualTo(request.getPostId());
+        assertThat(result.getPostId()).isEqualTo(postId);
         assertThat(result.getTitle()).isEqualTo(request.getTitle());
         assertThat(result.getDocumentId()).isEqualTo(postDocId);
 
@@ -219,7 +222,6 @@ public class PostServiceTest {
         String postDocId = "postDoc";
 
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
-                .postId(postId)
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
@@ -241,10 +243,10 @@ public class PostServiceTest {
         Mockito.when(postDocRepository.findById(postDocId)).thenReturn(Optional.of(postDoc));
 
         //when
-        Post result = postService.updatePost(token, request);
+        Post result = postService.updatePost(token, postId, request);
 
         //then
-        assertThat(result.getPostId()).isEqualTo(request.getPostId());
+        assertThat(result.getPostId()).isEqualTo(postId);
         assertThat(result.getTitle()).isEqualTo(request.getTitle());
 
         verify(postDocRepository, times(1)).save(any(PostDocument.class));
@@ -259,7 +261,6 @@ public class PostServiceTest {
         long postUserId = 10L;
 
         PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
-                .postId(postId)
                 .build();
 
         Post post = Post.builder()
@@ -278,7 +279,7 @@ public class PostServiceTest {
         Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         Mockito.when(postDocRepository.findById(postDocId)).thenReturn(Optional.of(postDoc));
 
-        assertThatThrownBy(() -> postService.updatePost(token, request))
+        assertThatThrownBy(() -> postService.updatePost(token, postId, request))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.NO_PERMISSION.getMessage());
     }
