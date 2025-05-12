@@ -1,5 +1,6 @@
 package com.gucci.blog_service.post.domain.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,36 +11,63 @@ public class PostRequestDTO {
     @Getter
     @Builder
     public static class createPost{
-        Long postId; //임시저장 글로 생성할 경우 draftpostId. 아니면 null
+        @Schema(description = "임시저장 글로 생성할 경우 draftpostId 를 입력. 아니면 null 입력", example = "0")
+        Long postId;
+
+        @Schema(description = "글 제목은 필수입니다", example = "글 제목")
         @NotBlank(message = "제목은 필수입니다.")
         String title;
+
+        @Schema(description = "글 내용은 필수입니다", example = "글 내용")
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
+
+        @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
+
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
         Long categoryCode;
     }
 
     @Getter
     @Builder
     public static class updatePost{
+        @Schema(description = "글 제목은 필수입니다", example = "글 제목")
         @NotBlank(message = "제목은 필수입니다.")
         String title;
+
+        @Schema(description = "글 내용은 필수입니다", example = "글 내용")
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
+
+        @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
+
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
         Long categoryCode;
     }
 
     @Getter
     @Builder
     public static class createDraft{
-        Long draftPostId; //임시저장 글 아이디
-        Long parentPostId; //발행된 글 아이디
+        @Schema(description = "임시저장 글 수정 시 임시저장 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.")
+        Long draftPostId;
+
+        @Schema(description = "발행된 글에 대한 임시저장일 경우 발행된 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.")
+        Long parentPostId;
+
+        @Schema(description = "제목은 필수입니다", example = "임시저장 글 제목")
         @NotBlank(message = "제목은 필수입니다.")
         String title;
+
+        @Schema(description = "글 내용은 필수입니다", example = "임시저장 글 내용")
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
+
+        @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
+
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
         Long categoryCode;
     }
 

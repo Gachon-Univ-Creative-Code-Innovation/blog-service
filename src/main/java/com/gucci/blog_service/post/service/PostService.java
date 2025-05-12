@@ -2,6 +2,8 @@ package com.gucci.blog_service.post.service;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.service.CategoryService;
+import com.gucci.blog_service.client.user.api.UserServiceApi;
+import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -15,6 +17,10 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +38,8 @@ public class PostService {
     private final CommentRefService commentRefService;
     private final TagService tagService;
     private final CategoryService categoryService;
+
+    private final UserServiceApi userServiceApi;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -107,6 +115,164 @@ public class PostService {
                 .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
+
+    // 팔로잉 글 조회
+    public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
+        //user-service에서 following 목록 가져오기
+        UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
+
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
+
+        //post로 dto만들기
+        List<PostResponseDTO.GetPost> posts = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                post -> {
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .postId(post.getPostId())
+                            .authorId(post.getUserId())
+                            .authorNickname(post.getUserNickName())
+                            .title(post.getTitle())
+                            .view(post.getView())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .summary(post.getSummary())
+                            .tagNameList(tagNameList)
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .pageSize(postList.getSize()) //페이지당 element개수
+                .pageNumber(postList.getNumber()) //현재 페이지 번호
+                .totalElements(postList.getTotalElements()) //페이징 적용 전 전체 element개수
+                .totalPages(postList.getTotalPages()) //전체 페이지 개수
+                .isFirst(postList.isFirst())
+                .isLast(postList.isLast())
+                .postList(posts)
+                .build();
+    }
+
+    //전체 글 조회
+    public PostResponseDTO.GetPostList getPostAll(Integer page) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByDraft(false, pageable);
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                        post -> {
+                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                            return PostResponseDTO.GetPost.builder()
+                                    .tagNameList(tagNameList)
+                                    .view(post.getView())
+                                    .title(post.getTitle())
+                                    .postId(post.getPostId())
+                                    .authorNickname(post.getUserNickName())
+                                    .authorId(post.getUserId())
+                                    .categoryCode(post.getCategory().getCategoryId())
+                                    .summary(post.getSummary())
+                                    .createdAt(post.getCreatedAt())
+                                    .updatedAt(post.getUpdatedAt())
+                                    .build();
+                        }
+                ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
+                .build();
+    }
+
+    //카테고리별 글 조회
+    public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
+        Category category = categoryService.getCategory(categoryId);
+
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByCategoryAndDraft(category, false, pageable);
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                post -> {
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .tagNameList(tagNameList)
+                            .view(post.getView())
+                            .title(post.getTitle())
+                            .postId(post.getPostId())
+                            .authorNickname(post.getUserNickName())
+                            .authorId(post.getUserId())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .summary(post.getSummary())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
+                .build();
+    }
+
+    //인기글 조회
+    public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
+        int pageSize = 10;
+        Page<Post> postList = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                post -> {
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .tagNameList(tagNameList)
+                            .view(post.getView())
+                            .title(post.getTitle())
+                            .postId(post.getPostId())
+                            .authorNickname(post.getUserNickName())
+                            .authorId(post.getUserId())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .summary(post.getSummary())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
                 .build();
     }
 
