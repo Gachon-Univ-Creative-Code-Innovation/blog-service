@@ -140,11 +140,21 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
 
+        //doc 조회
+        List<String> docIds = postList.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
+
         //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postList.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
+                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                    if (postDocument == null) {
+                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
+                    }
+                    String firstImage = getFirstImage(postDocument.getContent());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseDTO.GetPost.builder()
@@ -152,6 +162,7 @@ public class PostService {
                             .authorId(post.getUserId())
                             .authorNickname(post.getUserNickName())
                             .title(post.getTitle())
+                            .thumbnail(firstImage)
                             .view(post.getView())
                             .categoryCode(post.getCategory().getCategoryId())
                             .summary(post.getSummary())
@@ -179,10 +190,21 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postList = postRepository.findAllByDraft(false, pageable);
 
+        //doc 조회
+        List<String> docIds = postList.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
+
+
         List<PostResponseDTO.GetPost> postRes = postList.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                         post -> {
+                            PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                            if (postDocument == null) {
+                                throw new CustomException(ErrorCode.NOT_FOUND_POST);
+                            }
+                            String firstImage = getFirstImage(postDocument.getContent());
                             List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseDTO.GetPost.builder()
@@ -194,6 +216,7 @@ public class PostService {
                                     .authorId(post.getUserId())
                                     .categoryCode(post.getCategory().getCategoryId())
                                     .summary(post.getSummary())
+                                    .thumbnail(firstImage)
                                     .createdAt(post.getCreatedAt())
                                     .updatedAt(post.getUpdatedAt())
                                     .build();
@@ -219,10 +242,21 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postList = postRepository.findAllByCategoryAndDraft(category, false, pageable);
 
+        //doc 조회
+        List<String> docIds = postList.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
+
+
         List<PostResponseDTO.GetPost> postRes = postList.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
+                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                    if (postDocument == null) {
+                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
+                    }
+                    String firstImage = getFirstImage(postDocument.getContent());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseDTO.GetPost.builder()
@@ -234,6 +268,7 @@ public class PostService {
                             .authorId(post.getUserId())
                             .categoryCode(post.getCategory().getCategoryId())
                             .summary(post.getSummary())
+                            .thumbnail(firstImage)
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
                             .build();
@@ -256,10 +291,21 @@ public class PostService {
         int pageSize = 10;
         Page<Post> postList = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
 
+        //doc 조회
+        List<String> docIds = postList.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
+
+
         List<PostResponseDTO.GetPost> postRes = postList.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
+                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                    if (postDocument == null) {
+                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
+                    }
+                    String firstImage = getFirstImage(postDocument.getContent());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseDTO.GetPost.builder()
@@ -271,6 +317,7 @@ public class PostService {
                             .authorId(post.getUserId())
                             .categoryCode(post.getCategory().getCategoryId())
                             .summary(post.getSummary())
+                            .thumbnail(firstImage)
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
                             .build();
@@ -568,5 +615,16 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
         );
+    }
+
+    private String getFirstImage(String content) {
+        String firstImage = htmlImageHelper.extractFirstImageFromSavedContent(content);
+        String presignedUrl = null;
+
+        if (firstImage != null) {
+            // 첫 번째 이미지의 objectKey를 presigned URL로 변환
+            presignedUrl = s3Service.getPresignedUrl(firstImage);
+        }
+        return presignedUrl;
     }
 }

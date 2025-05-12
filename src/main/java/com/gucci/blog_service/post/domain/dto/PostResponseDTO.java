@@ -32,6 +32,7 @@ public class PostResponseDTO {
         String authorNickname;
         String title;
         String summary;
+        String thumbnail;
         Long view;
         List<String> tagNameList;
         Long categoryCode;

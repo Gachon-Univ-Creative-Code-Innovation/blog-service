@@ -36,6 +36,22 @@ public class HtmlImageHelper {
     }
 
     /**
+     * 저장된 게시글에서 첫번째 이미지 objectkey값 반환
+     */
+    public String extractFirstImageFromSavedContent(String html) {
+        Document doc = Jsoup.parseBodyFragment(html);
+        Elements imgTags = doc.select("img");
+
+        if (!imgTags.isEmpty()) {
+            // 첫 번째 이미지의 src 값을 반환
+            return imgTags.get(0).attr("src");
+        }
+
+        return null; // 이미지가 없으면 null 반환
+    }
+
+
+    /**
      * HTML에서 <img> 태그의 src를 objectKey로 정제
      * <img src="https://objectstorage.../abc123.jpg?...presigned" />
      * to
