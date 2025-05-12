@@ -196,6 +196,41 @@ public class PostService {
                 .build();
     }
 
+    public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
+        int pageSize = 10;
+        Page<Post> postList = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream().map(
+                post -> {
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .tagNameList(tagNameList)
+                            .view(post.getView())
+                            .title(post.getTitle())
+                            .postId(post.getPostId())
+                            .authorNickname(post.getUserNickName())
+                            .authorId(post.getUserId())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .summary(post.getSummary())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
+                .build();
+    }
+
+
     @Transactional
     public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
