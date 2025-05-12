@@ -4,7 +4,7 @@ import com.gucci.blog_service.comment.domain.Comment;
 import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
 import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.repository.CommentRepository;
-import com.gucci.blog_service.config.JwtTokenHelper;
+import com.gucci.blog_service.global.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.service.PostService;
 import com.gucci.common.exception.CustomException;

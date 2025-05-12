@@ -58,6 +58,10 @@ dependencies {
 	implementation 'software.amazon.awssdk:s3:2.20.0'
 	implementation 'software.amazon.awssdk:core:2.20.0'
 	implementation 'software.amazon.awssdk:auth:2.20.0'
+
+	//img tag parsing
+	implementation 'org.jsoup:jsoup:1.17.2'
+
 }
 
 dependencyManagement {

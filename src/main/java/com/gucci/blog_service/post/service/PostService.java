@@ -5,7 +5,8 @@ import com.gucci.blog_service.category.service.CategoryService;
 import com.gucci.blog_service.client.user.api.UserServiceApi;
 import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
 import com.gucci.blog_service.comment.service.CommentRefService;
-import com.gucci.blog_service.config.JwtTokenHelper;
+import com.gucci.blog_service.global.HtmlImageHelper;
+import com.gucci.blog_service.global.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
@@ -42,6 +43,7 @@ public class PostService {
     private final UserServiceApi userServiceApi;
 
     private final JwtTokenHelper jwtTokenHelper;
+    private final HtmlImageHelper htmlImageHelper;
 
     /**
      * 게시글
@@ -60,8 +62,11 @@ public class PostService {
             //태그 업데이트
             tagService.updateByTagNameList(post, dto.getTagNameList());
 
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
             //postDoc 업데이트
-            postDocument.updateContent(dto.getContent());
+            postDocument.updateContent(processedContent);
             postDocRepository.save(postDocument);
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
@@ -75,8 +80,10 @@ public class PostService {
         // 새로 작성한 글인 경우
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
+        //img src objectKey 정제
+        String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
         PostDocument postDocument = PostDocument.builder()
-                .content(dto.getContent())
+                .content(processedContent)
                 .build();
         postDocRepository.save(postDocument);
 
@@ -104,13 +111,17 @@ public class PostService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
         List<String> tagNameList = tagService.getTagNamesByPost(post);
 
+        // 본문 HTML 내 이미지 objectKey-> url 변환
+        String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
+
+
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
                 .authorNickname("임시")
                 .view(post.getView())
                 .title(post.getTitle())
-                .content(postDocument.getContent())
+                .content(contentWithImageUrl)
                 .tagNameList(tagNameList)
                 .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())
@@ -361,8 +372,11 @@ public class PostService {
 
         //글 발행 전 임시저장
         if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
             PostDocument postDocument = PostDocument.builder()
-                    .content(dto.getContent())
+                    .content(processedContent)
                     .build();
             postDocRepository.save(postDocument);
 
@@ -385,8 +399,11 @@ public class PostService {
         }
         // 글 발행 후 임시저장
         else if (dto.getDraftPostId() == null){
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
             PostDocument postDocument = PostDocument.builder()
-                    .content(dto.getContent())
+                    .content(processedContent)
                     .build();
             postDocRepository.save(postDocument);
 
@@ -416,7 +433,11 @@ public class PostService {
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
             tagService.updateByTagNameList(draft, dto.getTagNameList());
-            draftDoc.updateContent(dto.getContent());
+
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
+            draftDoc.updateContent(processedContent);
             postDocRepository.save(draftDoc); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
             draft.update(dto.getTitle(), category);
 
@@ -442,13 +463,15 @@ public class PostService {
 
         List<String> tagNameList = tagService.getTagNamesByPost(post);
 
+        String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
+
         return PostResponseDTO.GetDraftDetail.builder()
                 .draftPostId(post.getPostId())
                 .parentPostId(post.getParentPostId())
                 .authorId(post.getUserId())
                 .title(post.getTitle())
                 .authorNickname("임시")
-                .content(postDocument.getContent())
+                .content(contentWithImageUrl)
                 .tagNameList(tagNameList)
                 .categoryCode(post.getCategory().getCategoryType().getCode())
                 .createdAt(post.getCreatedAt())

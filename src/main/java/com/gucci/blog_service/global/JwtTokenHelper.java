@@ -1,4 +1,4 @@
-package com.gucci.blog_service.config;
+package com.gucci.blog_service.global;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
