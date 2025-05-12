@@ -46,6 +46,15 @@ public class PostController {
         return ApiResponse.success(getPostList);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ApiResponse<PostResponseDTO.GetPostList> getPostListByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(name = "page") int page
+    ){
+        PostResponseDTO.GetPostList getPostList = postService.getPostListByCategory(categoryId, page);
+        return ApiResponse.success(getPostList);
+    }
+
     @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(
             @RequestHeader("Authorization") String token,
