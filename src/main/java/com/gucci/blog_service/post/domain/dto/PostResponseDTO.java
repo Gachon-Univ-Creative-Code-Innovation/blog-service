@@ -23,6 +23,33 @@ public class PostResponseDTO {
         LocalDateTime updatedAt;
     }
 
+    @Builder
+    @Getter
+    public static class GetPost{
+        Long postId;
+        Long authorId;
+        String authorNickname;
+        String title;
+        String content;
+        Long view;
+        List<String> tagNameList;
+        Long categoryCode;
+        LocalDateTime createdAt;
+        LocalDateTime updatedAt;
+    }
+
+    @Builder
+    @Getter
+    public static class GetPostList{
+        Long totalElements;
+        Integer totalPages;
+        Integer pageNumber;
+        Integer pageSize;
+        Boolean isFirst;
+        Boolean isLast;
+        List<GetPost> postList;
+    }
+
 
     @Builder
     @Getter

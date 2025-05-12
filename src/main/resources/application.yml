@@ -22,5 +22,9 @@ spring:
     #mongodb:
      # uri: ${LOCAL_MONGODB_URI}
 
+feign:
+  user-service:
+    url : "http://localhost:8081"
+
 jwt:
   secret: ${JWT_SECRET}
