@@ -64,7 +64,7 @@ public class PostResponseDTO {
     @Getter
     public static class GetDraftDetail{
         Long draftPostId;
-        @Schema(description = "임시저장글의 부모 글(게시된 글)")
+        @Schema(description = "임시저장글의 부모 글(게시된 글) id")
         Long parentPostId;
         Long authorId;
         String authorNickname;
