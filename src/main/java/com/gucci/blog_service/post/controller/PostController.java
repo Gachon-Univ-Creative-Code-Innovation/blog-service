@@ -37,6 +37,15 @@ public class PostController {
         return ApiResponse.success(getPostDetail);
     }
 
+    @GetMapping("/following")
+    public ApiResponse<PostResponseDTO.GetPostList> getFollowingPostList(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(name = "page") int page
+    ){
+        PostResponseDTO.GetPostList getPostList = postService.getFollowingPostList(token, page);
+        return ApiResponse.success(getPostList);
+    }
+
     @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(
             @RequestHeader("Authorization") String token,

@@ -2,6 +2,8 @@ package com.gucci.blog_service.post.service;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.service.CategoryService;
+import com.gucci.blog_service.client.user.api.UserServiceApi;
+import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.config.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
@@ -15,6 +17,8 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +36,8 @@ public class PostService {
     private final CommentRefService commentRefService;
     private final TagService tagService;
     private final CategoryService categoryService;
+
+    private final UserServiceApi userServiceApi;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -109,6 +115,54 @@ public class PostService {
                 .updatedAt(post.getUpdatedAt())
                 .build();
     }
+
+
+
+    public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
+        //user-service에서 following 목록 가져오기
+        UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
+
+        int pageSize = 10;
+        Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), PageRequest.of(page, pageSize));
+
+        List<String> postDocIds = postList.stream().map(Post::getDocumentId).toList();
+        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(postDocIds).stream()
+                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); //id, PostDocument
+
+        //post, postDoc으로 dto만들기
+        List<PostResponseDTO.GetPost> posts = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                post -> {
+                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .postId(post.getPostId())
+                            .authorId(post.getUserId())
+                            .authorNickname(post.getUserNickName())
+                            .title(post.getTitle())
+                            .view(post.getView())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .content(postDocument.getContent())
+                            .tagNameList(tagNameList)
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .pageSize(postList.getSize()) //페이지당 element개수
+                .pageNumber(postList.getNumber()) //현재 페이지 번호
+                .totalElements(postList.getTotalElements()) //페이징 적용 전 전체 element개수
+                .totalPages(postList.getTotalPages()) //전체 페이지 개수
+                .isFirst(postList.isFirst())
+                .isLast(postList.isLast())
+                .postList(posts)
+                .build();
+    }
+
 
 
     @Transactional
