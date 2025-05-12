@@ -19,6 +19,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -123,7 +125,8 @@ public class PostService {
         UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
 
         int pageSize = 10;
-        Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), PageRequest.of(page, pageSize));
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
 
         //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postList.stream()
@@ -158,15 +161,55 @@ public class PostService {
                 .build();
     }
 
+    //전체 글 조회
+    public PostResponseDTO.GetPostList getPostAll(Integer page) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByDraft(false, pageable);
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                        post -> {
+                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                            return PostResponseDTO.GetPost.builder()
+                                    .tagNameList(tagNameList)
+                                    .view(post.getView())
+                                    .title(post.getTitle())
+                                    .postId(post.getPostId())
+                                    .authorNickname(post.getUserNickName())
+                                    .authorId(post.getUserId())
+                                    .categoryCode(post.getCategory().getCategoryId())
+                                    .summary(post.getSummary())
+                                    .createdAt(post.getCreatedAt())
+                                    .updatedAt(post.getUpdatedAt())
+                                    .build();
+                        }
+                ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
+                .build();
+    }
 
     //카테고리별 글 조회
     public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
         int pageSize = 10;
-        Page<Post> postList = postRepository.findAllByCategoryAndDraft(category, false, PageRequest.of(page, pageSize));
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postList = postRepository.findAllByCategoryAndDraft(category, false, pageable);
 
-        List<PostResponseDTO.GetPost> postRes = postList.stream().map(
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
                 post -> {
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
@@ -196,11 +239,14 @@ public class PostService {
                 .build();
     }
 
+    //인기글 조회
     public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
         int pageSize = 10;
         Page<Post> postList = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
 
-        List<PostResponseDTO.GetPost> postRes = postList.stream().map(
+        List<PostResponseDTO.GetPost> postRes = postList.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
                 post -> {
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 

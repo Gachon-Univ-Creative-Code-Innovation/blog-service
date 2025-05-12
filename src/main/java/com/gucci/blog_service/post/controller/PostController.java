@@ -5,6 +5,10 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.service.PostService;
 import com.gucci.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,64 +24,86 @@ public class PostController {
     /**
      * 블로그 글
      */
+    @Operation(summary = "게시글 생성", description = "게시글을 생성합니다.")
     @PostMapping("")
     public ApiResponse<String> createPost(
-            @RequestHeader("Authorization") String token,
+            HttpServletRequest request,
             @RequestBody @Valid PostRequestDTO.createPost post
     ){
+        String token = request.getHeader("Authorization");
         Post newPost = postService.createPost(token, post);
         return ApiResponse.success(newPost.getPostId() + " 글이 정상적으로 생성되었습니다.");
     }
 
+    @Operation(summary = "게시글 한 개 조회", description = "게시글 한 개를 상세 조회합니다.")
     @GetMapping("/{postId}")
     public ApiResponse<PostResponseDTO.GetPostDetail> getPostDetail(
-            @PathVariable Long postId
+            @Schema(description = "조회할 글의 postId", example = "0") @PathVariable Long postId
     ){
         PostResponseDTO.GetPostDetail getPostDetail = postService.getPostDetail(postId);
         return ApiResponse.success(getPostDetail);
     }
 
+    @Operation(summary = "팔로잉 글 조회", description = "사용자가 팔로잉하고 있는 사용자들의 글 리스트를 조회합니다. 최신순으로 정렬됩니다.")
     @GetMapping("/following")
     public ApiResponse<PostResponseDTO.GetPostList> getFollowingPostList(
-            @RequestHeader("Authorization") String token,
-            @RequestParam(name = "page") int page
+            HttpServletRequest request,
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다.", example = "0") @RequestParam(name = "page") int page
     ){
+        String token = request.getHeader("Authorization");
         PostResponseDTO.GetPostList getPostList = postService.getFollowingPostList(token, page);
         return ApiResponse.success(getPostList);
     }
 
+    @Operation(summary = "전체 글 조회", description = "전체 글 목록을 조회합니다")
+    @GetMapping("/all")
+    public ApiResponse<PostResponseDTO.GetPostList> getAllPostList(
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
+    ){
+        PostResponseDTO.GetPostList getPostList = postService.getPostAll(page);
+        return ApiResponse.success(getPostList);
+    }
+
+    @Operation(summary = "카테고리 별 글 조회", description = "카테고리 별 글 리스트를 조회합니다. 최신순으로 정렬됩니다.")
     @GetMapping("/category/{categoryId}")
     public ApiResponse<PostResponseDTO.GetPostList> getPostListByCategory(
-            @PathVariable Long categoryId,
-            @RequestParam(name = "page") int page
+            @Schema(description = "조회할 카테고리 id를 입력합니다.", example = "0") @PathVariable Long categoryId,
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
         PostResponseDTO.GetPostList getPostList = postService.getPostListByCategory(categoryId, page);
         return ApiResponse.success(getPostList);
     }
 
+    @Operation(summary = "인기글 조회", description = "인기글 리스트를 조회합니다. 최신순으로 정렬됩니다. 조회수를 기준으로 선정됩니다.")
     @GetMapping("/trending")
     public ApiResponse<PostResponseDTO.GetPostList> getTrendingPostList(
-            @RequestParam(name = "page") int page
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
         PostResponseDTO.GetPostList getPostList = postService.getTrendingPostList(page);
         return ApiResponse.success(getPostList);
     }
 
+    @Operation(summary = "게시글 수정", description = "게시글을 수정합니다. 작성한 본인만 수정가능합니다.")
     @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Long postId, // 발행된 postId, draft를 이용해 수정할 경의 draft의 paerentpostId
+            HttpServletRequest request,
+            @Schema(description = "수정할 글의 postId를 입력합니다. 임시저장글을 이용해 수정할 경우 paerentPostId를 입력합니다")
+            @PathVariable Long postId,
             @RequestBody @Valid PostRequestDTO.updatePost dto
     ){
+        String token = request.getHeader("Authorization");
         Post post = postService.updatePost(token, postId, dto);
         return ApiResponse.success(post.getPostId() + " 글이 정상적으로 수정되었습니다.");
     }
 
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다. 작성한 본인만 삭제가능합니다.")
     @DeleteMapping("/{postId}")
     public ApiResponse<String> deletePost(
-            @RequestHeader("Authorization") String token,
+            HttpServletRequest request,
+            @Schema(description = "삭제할 글의 postId를 입력합니다")
             @PathVariable Long postId
     ){
+        String token = request.getHeader("Authorization");
         postService.deletePost(token, postId);
         return ApiResponse.success("글이 정상적으로 삭제되었습니다.");
     }
@@ -86,37 +112,45 @@ public class PostController {
     /**
      * 임시저장 글
      */
+    @Operation(summary = "임시저장", description = "임시저장합니다.")
     @PostMapping("/drafts")
     public ApiResponse<String> createDraft(
-            @RequestHeader("Authorization") String token,
+            HttpServletRequest request,
             @RequestBody @Valid PostRequestDTO.createDraft dto
     ){
+        String token = request.getHeader("Authorization");
         Post post = postService.createDraft(token, dto);
         return ApiResponse.success(post.getPostId() + " 글이 임시저장되었습니다");
     }
 
+    @Operation(summary = "임시저장 상세조회", description = "임시저장 글을 상세조회합니다")
     @GetMapping("/drafts/{draftPostId}")
     public ApiResponse<PostResponseDTO.GetDraftDetail> getDraftDetail(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Long draftPostId
+            HttpServletRequest request,
+            @Schema(description = "임시저장글 id") @PathVariable Long draftPostId
     ){
+        String token = request.getHeader("Authorization");
         PostResponseDTO.GetDraftDetail response = postService.getDraftDetail(token, draftPostId);
         return ApiResponse.success(response);
     }
 
+    @Operation(summary = "임시저장 목록 조회", description = "임시저장 목록을 조회합니다.")
     @GetMapping("/drafts")
     public ApiResponse<PostResponseDTO.GetDraftList> getDraftList(
-            @RequestHeader("Authorization") String token
+            HttpServletRequest request
     ){
+        String token = request.getHeader("Authorization");
         PostResponseDTO.GetDraftList response = postService.getDraftList(token);
         return ApiResponse.success(response);
     }
 
+    @Operation(summary = "임시저장 삭제", description = "임시저장 글을 삭제합니다")
     @DeleteMapping("/drafts/{draftPostId}")
     public ApiResponse<String> deleteDraft(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Long draftPostId
+            HttpServletRequest request,
+            @Schema(description = "삭제할 임시저장 글 id")@PathVariable Long draftPostId
     ){
+        String token = request.getHeader("Authorization");
         postService.deleteDraft(token, draftPostId);
         return ApiResponse.success("임시저장 글 삭제 완료");
     }
