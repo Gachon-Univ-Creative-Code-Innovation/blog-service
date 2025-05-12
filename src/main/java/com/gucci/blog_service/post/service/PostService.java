@@ -117,7 +117,7 @@ public class PostService {
     }
 
 
-
+    // 팔로잉 글 조회
     public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
         //user-service에서 following 목록 가져오기
         UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
@@ -125,16 +125,11 @@ public class PostService {
         int pageSize = 10;
         Page<Post> postList = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), PageRequest.of(page, pageSize));
 
-        List<String> postDocIds = postList.stream().map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(postDocIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); //id, PostDocument
-
-        //post, postDoc으로 dto만들기
+        //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postList.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseDTO.GetPost.builder()
@@ -144,7 +139,7 @@ public class PostService {
                             .title(post.getTitle())
                             .view(post.getView())
                             .categoryCode(post.getCategory().getCategoryId())
-                            .content(postDocument.getContent())
+                            .summary(post.getSummary())
                             .tagNameList(tagNameList)
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
@@ -164,6 +159,42 @@ public class PostService {
     }
 
 
+    //카테고리별 글 조회
+    public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
+        Category category = categoryService.getCategory(categoryId);
+
+        int pageSize = 10;
+        Page<Post> postList = postRepository.findAllByCategoryAndDraft(category, false, PageRequest.of(page, pageSize));
+
+        List<PostResponseDTO.GetPost> postRes = postList.stream().map(
+                post -> {
+                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                    return PostResponseDTO.GetPost.builder()
+                            .tagNameList(tagNameList)
+                            .view(post.getView())
+                            .title(post.getTitle())
+                            .postId(post.getPostId())
+                            .authorNickname(post.getUserNickName())
+                            .authorId(post.getUserId())
+                            .categoryCode(post.getCategory().getCategoryId())
+                            .summary(post.getSummary())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .build();
+                }
+        ).toList();
+
+        return PostResponseDTO.GetPostList.builder()
+                .postList(postRes)
+                .pageNumber(postList.getNumber())
+                .pageSize(postList.getSize())
+                .totalPages(postList.getTotalPages())
+                .totalElements(postList.getTotalElements())
+                .isLast(postList.isLast())
+                .isFirst(postList.isFirst())
+                .build();
+    }
 
     @Transactional
     public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
