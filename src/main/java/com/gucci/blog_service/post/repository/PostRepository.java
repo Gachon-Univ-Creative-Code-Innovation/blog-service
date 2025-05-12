@@ -22,4 +22,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "    where p.view > 100" +
             "order by p.createdAt desc")
     Page<Post> findAllTrending(Pageable page);
+
+    Page<Post> findAllByDraft(Boolean draft, Pageable page);
 }

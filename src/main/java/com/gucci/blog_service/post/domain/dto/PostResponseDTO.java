@@ -1,5 +1,6 @@
 package com.gucci.blog_service.post.domain.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -41,12 +42,19 @@ public class PostResponseDTO {
     @Builder
     @Getter
     public static class GetPostList{
+        @Schema(description = "페이징 적용 전 전체 element개수")
         Long totalElements;
+        @Schema(description = "전체 페이지 개수")
         Integer totalPages;
+        @Schema(description = "현재 페이지 번호")
         Integer pageNumber;
+        @Schema(description = "패이지당 element개수")
         Integer pageSize;
+        @Schema(description = "첫번째 페이지이면 true를 반환")
         Boolean isFirst;
+        @Schema(description = "마지막 페이지이면 true를 반환")
         Boolean isLast;
+        @Schema(description = "게시글 리스트")
         List<GetPost> postList;
     }
 
@@ -55,6 +63,7 @@ public class PostResponseDTO {
     @Getter
     public static class GetDraftDetail{
         Long draftPostId;
+        @Schema(description = "임시저장글의 부모 글(게시된 글)")
         Long parentPostId;
         Long authorId;
         String authorNickname;
