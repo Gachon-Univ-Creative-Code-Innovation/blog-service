@@ -26,5 +26,9 @@ feign:
   user-service:
     url : "http://localhost:8081"
 
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+
 jwt:
   secret: ${JWT_SECRET}
