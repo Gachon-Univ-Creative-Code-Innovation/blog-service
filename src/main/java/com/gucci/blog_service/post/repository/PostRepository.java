@@ -20,7 +20,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("select p from Post p" +
             "    where p.view > 100" +
-            "order by p.createdAt desc " +
-            "limit 30")
+            "order by p.createdAt desc")
     Page<Post> findAllTrending(Pageable page);
 }
