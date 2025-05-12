@@ -44,6 +44,7 @@ public class PostService {
     private final UserServiceApi userServiceApi;
 
     private final JwtTokenHelper jwtTokenHelper;
+
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
@@ -65,11 +66,13 @@ public class PostService {
             //태그 업데이트
             tagService.updateByTagNameList(post, dto.getTagNameList());
 
+
             //img src objectKey 정제
             String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
 
             //postDoc 업데이트
             postDocument.updateContent(processedContent);
+
             postDocRepository.save(postDocument);
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
@@ -113,11 +116,10 @@ public class PostService {
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
         List<String> tagNameList = tagService.getTagNamesByPost(post);
-
+        
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
-
-
+        
         return PostResponseConverter.toGetPostDetailDto(post, contentWithImageUrl, tagNameList);
     }
 
@@ -129,6 +131,7 @@ public class PostService {
 
         int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+
         Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
 
         //doc 조회
@@ -183,6 +186,7 @@ public class PostService {
                 ).toList();
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
+
     }
 
     //카테고리별 글 조회
@@ -214,6 +218,7 @@ public class PostService {
         ).toList();
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
+
     }
 
     //인기글 조회
@@ -243,6 +248,7 @@ public class PostService {
         ).toList();
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
+
     }
 
 
@@ -285,6 +291,7 @@ public class PostService {
 
         //Doc 업데이트
         postDocument.updateContent(processedContent);
+
         postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
 
         //tag 업데이트
@@ -322,6 +329,7 @@ public class PostService {
             objectKeys.forEach(s3Service::deleteFile);
 
             //태그, Doc, Post 삭제
+
             tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDoc);
