@@ -59,15 +59,15 @@ public class HtmlImageHelper {
 
     /**
      * presigned URL에서 object key 추출
-     * 예: https://.../n/namespace/b/bucket/o/uploads/abc123.jpg -> uploads/abc123.jpg
+     * 예: https://alog-profile-images.../post/...fileName?... -> post/...fileName
      */
     private String extractKeyFromUrl(String urlString) {
         try {
             URL url = new URL(urlString);
-            String path = url.getPath(); // "/n/namespace/b/bucket/o/uploads/abc123.jpg"
-            int objectStart = path.indexOf("/o/");
+            String path = url.getPath(); // "https://alog-profile-images.../post/...fileName?..."
+            int objectStart = path.indexOf("/post/");
             if (objectStart != -1) {
-                return path.substring(objectStart + 3); // "uploads/abc123.jpg"
+                return path.substring(objectStart + 1); // "post/...fileName"
             }
             return urlString; // fallback
         } catch (Exception e) {
