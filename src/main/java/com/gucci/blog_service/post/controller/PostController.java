@@ -55,6 +55,14 @@ public class PostController {
         return ApiResponse.success(getPostList);
     }
 
+    @GetMapping("/trending")
+    public ApiResponse<PostResponseDTO.GetPostList> getTrendingPostList(
+            @RequestParam(name = "page") int page
+    ){
+        PostResponseDTO.GetPostList getPostList = postService.getTrendingPostList(page);
+        return ApiResponse.success(getPostList);
+    }
+
     @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(
             @RequestHeader("Authorization") String token,

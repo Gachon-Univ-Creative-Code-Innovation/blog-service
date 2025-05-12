@@ -15,6 +15,9 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "post", indexes = {
+        @Index(name = "idx_created_at", columnList = "createdAt")
+})
 public class Post extends BaseEntity { //todo: user연결하기
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
