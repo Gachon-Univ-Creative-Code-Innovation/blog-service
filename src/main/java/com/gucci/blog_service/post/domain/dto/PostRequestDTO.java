@@ -1,7 +1,6 @@
 package com.gucci.blog_service.post.domain.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,7 +16,7 @@ public class PostRequestDTO {
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
         List<String> tagNameList;
-        //todo : tag, category
+        Long categoryCode;
     }
 
     @Getter
@@ -28,7 +27,7 @@ public class PostRequestDTO {
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
         List<String> tagNameList;
-        //todo : category
+        Long categoryCode;
     }
 
     @Getter
@@ -41,7 +40,7 @@ public class PostRequestDTO {
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
         List<String> tagNameList;
-        //todo : category
+        Long categoryCode;
     }
 
 }
