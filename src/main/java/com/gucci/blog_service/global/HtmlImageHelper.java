@@ -8,6 +8,8 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -72,5 +74,25 @@ public class HtmlImageHelper {
             return urlString; // fallback
         }
     }
+
+
+    /**
+     * 저장된 postDoc.content()에서 img src에 있는 이미지의 objectKey들만 추출
+     */
+    public List<String> extractObjectKeysFromSavedContent(String savedContent) {
+        List<String> objectKeys = new ArrayList<>();
+        Document doc = Jsoup.parseBodyFragment(savedContent);
+        Elements imgTags = doc.select("img");
+
+        for (Element img : imgTags) {
+            String src = img.attr("src");
+            if (!src.startsWith("http")) {
+                objectKeys.add(src); // src = "uploads/abc123.jpg"
+            }
+        }
+
+        return objectKeys;
+    }
+
 }
 

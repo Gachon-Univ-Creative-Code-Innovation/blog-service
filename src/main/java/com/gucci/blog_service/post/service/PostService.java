@@ -44,6 +44,7 @@ public class PostService {
 
     private final JwtTokenHelper jwtTokenHelper;
     private final HtmlImageHelper htmlImageHelper;
+    private final S3Service s3Service;
 
     /**
      * 게시글
@@ -312,13 +313,21 @@ public class PostService {
             PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
 
+            //s3에서 사진 삭제
+            List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDocument.getContent());
+            objectKeys.forEach(s3Service::deleteFile);
+
+            //태그 Doc Post 삭제
             tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDocument);
         }
 
+        //img src objectKey 정제
+        String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
         //Doc 업데이트
-        postDocument.updateContent(dto.getContent());
+        postDocument.updateContent(processedContent);
         postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
 
         //tag 업데이트
@@ -350,10 +359,20 @@ public class PostService {
         if (draft != null) {
             PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
+
+            //s3에서 사진 삭제
+            List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDoc.getContent());
+            objectKeys.forEach(s3Service::deleteFile);
+
+            //태그, Doc, Post 삭제
             tagService.deleteAllByPost(draft);
             postRepository.delete(draft);
             postDocRepository.delete(draftDoc);
         }
+
+        //s3에서 사진 삭제
+        List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(postDocument.getContent());
+        objectKeys.forEach(s3Service::deleteFile);
 
         //댓글, 태그, Doc, Post 삭제
         tagService.deleteAllByPost(post);
@@ -532,6 +551,11 @@ public class PostService {
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
+
+
+        //s3에서 사진 삭제
+        List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(postDocument.getContent());
+        objectKeys.forEach(s3Service::deleteFile);
 
         tagService.deleteAllByPost(post);
         postRepository.delete(post);
