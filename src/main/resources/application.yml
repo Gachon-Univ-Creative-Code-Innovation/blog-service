@@ -21,11 +21,10 @@ spring:
       database: alog
     #mongodb:
      # uri: ${LOCAL_MONGODB_URI}
-
-  elasticsearch:
-    uris: http://localhost:9200
-    connection-timeout: 5s
-    socket-timeout: 3s
+    elasticsearch:
+      uris: localhost:9200
+      connection-timeout: 5s
+      socket-timeout: 3s
 
 aws:
   s3:

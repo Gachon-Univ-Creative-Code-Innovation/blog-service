@@ -16,11 +16,6 @@ public class PostSearchController {
         this.postSearchService = postSearchService;
     }
 
-    @PostMapping("/init")
-    public String initData() {
-        postSearchService.createSamplePost();
-        return "색인 완료!";
-    }
 
     @GetMapping
     public List<PostSearch> search(@RequestParam String q) {

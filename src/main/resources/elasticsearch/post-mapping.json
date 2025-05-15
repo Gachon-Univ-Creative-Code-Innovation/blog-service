@@ -1,0 +1,27 @@
+{
+  "properties": {
+    "id": {
+      "type": "text"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+    "content": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+    "author": {
+      "type": "text"
+    },
+    "tags": {
+      "type": "keyword"
+    },
+
+    "createdAt": {
+      "type": "date",
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS||yyyy-MM-dd HH:mm:ss.SSS||epoch_millis"
+    }
+
+  }
+}

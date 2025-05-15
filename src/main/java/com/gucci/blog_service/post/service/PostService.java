@@ -14,6 +14,7 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
+import com.gucci.blog_service.tag.domain.Tag;
 import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
@@ -40,6 +41,7 @@ public class PostService {
     private final CommentRefService commentRefService;
     private final TagService tagService;
     private final CategoryService categoryService;
+    private final PostSearchService postSearchService;
 
     private final UserServiceApi userServiceApi;
 
@@ -54,6 +56,10 @@ public class PostService {
      */
     @Transactional
     public Post createPost(String token, PostRequestDTO.createPost dto) {
+        Post savedPost;
+        PostDocument savedPostDocument;
+        List<String> savedTags;
+
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         //임시저장 글이었을 경우
@@ -65,47 +71,51 @@ public class PostService {
 
             //태그 업데이트
             tagService.updateByTagNameList(post, dto.getTagNameList());
-
+            savedTags = tagService.getTagNamesByPost(post);
 
             //img src objectKey 정제
             String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
 
             //postDoc 업데이트
             postDocument.updateContent(processedContent);
-
-            postDocRepository.save(postDocument);
+            savedPostDocument = postDocRepository.save(postDocument);
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
             //post 업데이트
             post.update(dto.getTitle(), category);
             post.publish();
-            return postRepository.save(post);
+            savedPost = postRepository.save(post);
+        }
+        else {
+
+            // 새로 작성한 글인 경우
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+            PostDocument postDocument = PostDocument.builder()
+                    .content(processedContent)
+                    .build();
+            savedPostDocument = postDocRepository.save(postDocument);
+
+            Post post = Post.builder()
+                    .view(0L)
+                    .documentId(postDocument.getId())
+                    .userId(userId)
+                    .title(dto.getTitle())
+                    .isDraft(false)
+                    .category(category)
+                    .build();
+            savedPost = postRepository.save(post);
+
+            //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
+            tagService.createTags(savedPost, dto.getTagNameList());
+            savedTags = tagService.getTagNamesByPost(post);
         }
 
-        // 새로 작성한 글인 경우
-        Category category = categoryService.getCategory(dto.getCategoryCode());
-
-        //img src objectKey 정제
-        String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
-        PostDocument postDocument = PostDocument.builder()
-                .content(processedContent)
-                .build();
-        postDocRepository.save(postDocument);
-
-        Post post = Post.builder()
-                .view(0L)
-                .documentId(postDocument.getId())
-                .userId(userId)
-                .title(dto.getTitle())
-                .isDraft(false)
-                .category(category)
-                .build();
-        Post savedPost = postRepository.save(post);
-
-        //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
-        tagService.createTags(savedPost, dto.getTagNameList());
-
+        //elastic search에 인덱싱
+        postSearchService.index(savedPost, savedPostDocument, savedTags);
         return savedPost;
     }
 
@@ -291,16 +301,18 @@ public class PostService {
 
         //Doc 업데이트
         postDocument.updateContent(processedContent);
-
         postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
 
         //tag 업데이트
         tagService.updateByTagNameList(post, dto.getTagNameList());
+        List<String> tagNameList = tagService.getTagNamesByPost(post);
 
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
         //Post 업데이트
         post.update(dto.getTitle(), category);
+
+        postSearchService.update(post, postDocument, tagNameList);
         return post;
     }
 
@@ -340,6 +352,7 @@ public class PostService {
         objectKeys.forEach(s3Service::deleteFile);
 
         //댓글, 태그, Doc, Post 삭제
+        postSearchService.delete(post.getPostId());
         tagService.deleteAllByPost(post);
         commentRefService.deleteAllByPost(post);
         postRepository.delete(post);
