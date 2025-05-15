@@ -54,6 +54,8 @@ public class PostService {
     /**
      * 게시글
      */
+
+    /** 게시글 생성 */
     @Transactional
     public Post createPost(String token, PostRequestDTO.createPost dto) {
         Post savedPost;
@@ -119,7 +121,7 @@ public class PostService {
         return savedPost;
     }
 
-
+    /** 게시글 하나 상세조회  */
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
         Post post = postRepository.findById(postId).
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
@@ -129,12 +131,15 @@ public class PostService {
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
-        
+
+        //조회시 조회수+1
+        post.updateView();
+        postSearchService.updateViewCount(post.getPostId(), post.getView());
         return PostResponseConverter.toGetPostDetailDto(post, contentWithImageUrl, tagNameList);
     }
 
 
-    // 팔로잉 글 조회
+    /** 팔로잉하는 사용자 글 조회 */
     public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
         //user-service에서 following 목록 가져오기
         UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
@@ -169,7 +174,7 @@ public class PostService {
     }
 
 
-    //전체 글 조회
+    /** 전체 글 조회 */
     public PostResponseDTO.GetPostList getPostAll(Integer page) {
         int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
@@ -199,7 +204,7 @@ public class PostService {
 
     }
 
-    //카테고리별 글 조회
+    /** 카테고리별 글 조회 */
     public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
@@ -231,7 +236,7 @@ public class PostService {
 
     }
 
-    //인기글 조회
+    /** 인기글 조회 */
     public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
         int pageSize = 10;
         Page<Post> postPage = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
@@ -261,7 +266,7 @@ public class PostService {
 
     }
 
-
+    /** 게시글 수정 */
     @Transactional
     public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -316,7 +321,7 @@ public class PostService {
         return post;
     }
 
-
+    /** 게시글 삭제 */
     @Transactional
     public void deletePost(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -363,6 +368,8 @@ public class PostService {
     /**
      * 임시저장글
      */
+
+    /** 임시저장 생성 */
     @Transactional
     public Post createDraft(String token, PostRequestDTO.createDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -442,7 +449,7 @@ public class PostService {
         }
     }
 
-
+    /** 임시저장 하나 상세조회 */
     public PostResponseDTO.GetDraftDetail getDraftDetail(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
@@ -467,7 +474,7 @@ public class PostService {
     }
 
 
-
+    /** 임시저장 목록 조회 */
     public PostResponseDTO.GetDraftList getDraftList(String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
@@ -495,7 +502,7 @@ public class PostService {
                 .build();
     }
 
-
+    /** 임시저장 삭제 */
     @Transactional
     public void deleteDraft(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -526,7 +533,7 @@ public class PostService {
         );
     }
 
-    // postdoc content에서 첫번째 이미지(대표이미지) URL 반환
+    /** postdoc content에서 첫번째 이미지(대표이미지) URL 반환 */
     private String getFirstImageUrl(String content) {
         String firstImage = htmlImageHelper.extractFirstImageFromSavedContent(content);
         String presignedUrl = null;

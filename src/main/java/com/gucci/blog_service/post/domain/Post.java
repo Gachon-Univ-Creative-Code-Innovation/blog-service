@@ -48,8 +48,8 @@ public class Post extends BaseEntity { //todo: user연결하기
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Category category;
 
-    public void updateTitle(String title) {
-        this.title = title;
+    public void updateView() {
+        this.view += 1 ;
     }
 
     public void update(String title, Category category) {

@@ -32,6 +32,9 @@ public class PostSearch {
     @Field(type = FieldType.Text, analyzer = "korean")
     private String content;
 
+    @Field(type = FieldType.Long)
+    private Long veiwCount;
+
     @Field(type = FieldType.Date, format = DateFormat.date_time)
     private OffsetDateTime createdAt;
 }
