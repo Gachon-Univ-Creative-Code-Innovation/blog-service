@@ -1,4 +1,4 @@
-package com.gucci.blog_service.config.properties;
+package com.gucci.blog_service.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

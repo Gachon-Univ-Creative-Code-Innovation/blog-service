@@ -1,6 +1,6 @@
 package com.gucci.blog_service.post.service;
 
-import com.gucci.blog_service.config.properties.S3Config;
+import com.gucci.blog_service.config.S3Config;
 import com.gucci.blog_service.post.domain.dto.PresignedUrlResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

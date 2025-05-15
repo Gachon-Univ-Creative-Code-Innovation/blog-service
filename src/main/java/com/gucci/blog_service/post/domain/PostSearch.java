@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(indexName = "post")
-public class PostSerach {
+public class PostSearch {
     @Id
     private String id;
 
