@@ -38,6 +38,9 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:v1.0.2'
 
+	//elastic search
+	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
 	//jwt 토큰 관련 라이브러리 추가
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -45,14 +48,6 @@ dependencies {
 
 	//swagger
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0"
-
-	//oci
-	implementation 'com.oracle.oci.sdk:oci-java-sdk-objectstorage:3.38.0'
-	implementation 'com.oracle.oci.sdk:oci-java-sdk:3.38.0'
-	implementation 'com.oracle.oci.sdk:oci-java-sdk-common:3.38.0'
-	implementation 'com.oracle.oci.sdk:oci-java-sdk-common-httpclient:3.38.0'
-	implementation 'com.oracle.oci.sdk:oci-java-sdk-common-httpclient-choices:3.38.0'
-	implementation ('com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3:3.37.0')
 
 	//aws
 	implementation 'software.amazon.awssdk:s3:2.20.0'
