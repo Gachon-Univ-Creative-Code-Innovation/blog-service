@@ -4,7 +4,7 @@ import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.domain.type.CategoryType;
 import com.gucci.blog_service.category.service.CategoryService;
 import com.gucci.blog_service.comment.service.CommentRefService;
-import com.gucci.blog_service.config.JwtTokenHelper;
+import com.gucci.blog_service.global.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;

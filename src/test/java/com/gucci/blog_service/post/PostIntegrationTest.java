@@ -3,12 +3,11 @@ package com.gucci.blog_service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gucci.blog_service.config.JwtTokenHelper;
+import com.gucci.blog_service.global.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.repository.PostRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
 import com.gucci.blog_service.comment.repository.CommentRepository;
-import com.gucci.blog_service.config.JwtTokenHelper;
+import com.gucci.blog_service.global.JwtTokenHelper;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
