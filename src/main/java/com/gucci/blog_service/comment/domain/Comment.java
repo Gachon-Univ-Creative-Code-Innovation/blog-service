@@ -48,7 +48,9 @@ public class Comment extends BaseEntity { //todo: user연결하기
     public void updateContent(String content){
         this.content = content;
     }
-
+    public void update(String userNickName){
+        this.userNickName = userNickName;
+    }
     public void setDeleted(){
         this.isDeleted = true;
         this.content = "삭제된 댓글입니다.";
