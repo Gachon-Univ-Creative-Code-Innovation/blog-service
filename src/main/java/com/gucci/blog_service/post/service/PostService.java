@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.function.Predicate.not;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -63,6 +65,7 @@ public class PostService {
         List<String> savedTags;
 
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
+        String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
 
         //임시저장 글이었을 경우
         if (dto.getPostId() != null) {
@@ -104,7 +107,8 @@ public class PostService {
             Post post = Post.builder()
                     .view(0L)
                     .documentId(postDocument.getId())
-                    .userId(userId)
+                    .authorId(userId)
+                    .authorNickName(authorNickName)
                     .title(dto.getTitle())
                     .isDraft(false)
                     .category(category)
@@ -178,10 +182,10 @@ public class PostService {
     public PostResponseDTO.GetPostList getPostAll(Integer page) {
         int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-        Page<Post> postPage = postRepository.findAllByDraft(false, pageable);
+        Page<Post> postPage = postRepository.findAllByIsDraft(false, pageable);
 
         //doc 조회
-        List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
         Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
                 .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
 
@@ -210,10 +214,10 @@ public class PostService {
 
         int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-        Page<Post> postPage = postRepository.findAllByCategoryAndDraft(category, false, pageable);
+        Page<Post> postPage = postRepository.findAllByCategoryAndIsDraft(category, false, pageable);
 
         //doc 조회
-        List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
         Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
                 .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
 
@@ -242,7 +246,7 @@ public class PostService {
         Page<Post> postPage = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
 
         //doc 조회
-        List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
+        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
         Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
                 .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
 
@@ -281,7 +285,7 @@ public class PostService {
 
 
         //권한 체크. 글 작성자만 수정 가능
-        if (!post.getUserId().equals(userId)) {
+        if (!post.getAuthorId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
@@ -331,7 +335,7 @@ public class PostService {
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
         //권한 체크. 글 작성자만 삭제 가능
-        if (!post.getUserId().equals(userId)) {
+        if (!post.getAuthorId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
@@ -373,6 +377,7 @@ public class PostService {
     @Transactional
     public Post createDraft(String token, PostRequestDTO.createDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
+        String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
 
         //글 발행 전 임시저장
         if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
@@ -389,7 +394,8 @@ public class PostService {
             Post post = Post.builder()
                     .view(0L)
                     .documentId(postDocument.getId())
-                    .userId(userId)
+                    .authorId(userId)
+                    .authorNickName(authorNickName)
                     .title(dto.getTitle())
                     .isDraft(true)
                     .category(category)
@@ -417,7 +423,8 @@ public class PostService {
                     .view(0L)
                     .parentPostId(dto.getParentPostId())
                     .documentId(postDocument.getId())
-                    .userId(userId)
+                    .authorNickName(authorNickName)
+                    .authorId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
                     .category(category)
@@ -461,7 +468,7 @@ public class PostService {
         if (!post.isDraft()) { // 임시저장 글이 아님
             throw new CustomException(ErrorCode.INVALID_ARGUMENT);
         }
-        if (!post.getUserId().equals(userId)) { //사용자 != 임시저장 작성자
+        if (!post.getAuthorId().equals(userId)) { //사용자 != 임시저장 작성자
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
@@ -478,7 +485,7 @@ public class PostService {
     public PostResponseDTO.GetDraftList getDraftList(String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        List<Post> postList = postRepository.findAllByUserId(userId);
+        List<Post> postList = postRepository.findAllByAuthorId(userId);
         List<String> draftDocIds = postList.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
         Map<String, PostDocument> postDocMap = postDocRepository.findAllById(draftDocIds).stream()
                 .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
@@ -512,7 +519,7 @@ public class PostService {
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         //권한 체크. 글 작성자만 삭제 가능
-        if (!post.getUserId().equals(userId)) {
+        if (!post.getAuthorId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 

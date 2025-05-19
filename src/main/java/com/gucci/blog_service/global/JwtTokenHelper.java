@@ -51,4 +51,10 @@ public class JwtTokenHelper {
         token = getJwtToken(token);
         return extractClaims(token).get("role", String.class);
     }
+
+    public String getNicknameFromToken(String token) {
+        token = getJwtToken(token);
+        return extractClaims(token).get("nickname", String.class);
+    }
 }
+

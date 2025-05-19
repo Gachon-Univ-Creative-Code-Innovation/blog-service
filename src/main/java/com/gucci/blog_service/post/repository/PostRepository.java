@@ -13,15 +13,15 @@ import java.util.Optional;
 
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findAllByUserId(Long userId);
+    List<Post> findAllByAuthorId(Long userId);
     Optional<Post> findByParentPostId(Long parentPostId);
     Page<Post> findAllByPostIdIn(List<Long> parentPostIds, Pageable page);
-    Page<Post> findAllByCategoryAndDraft(Category category, Boolean isDraft, Pageable page);
+    Page<Post> findAllByCategoryAndIsDraft(Category category, Boolean isDraft, Pageable page);
 
     @Query("select p from Post p" +
             "    where p.view > 100" +
             "order by p.createdAt desc")
     Page<Post> findAllTrending(Pageable page);
 
-    Page<Post> findAllByDraft(Boolean draft, Pageable page);
+    Page<Post> findAllByIsDraft(Boolean isDraft, Pageable page);
 }

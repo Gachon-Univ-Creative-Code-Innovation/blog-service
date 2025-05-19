@@ -642,7 +642,7 @@ public class PostServiceTest {
         List<PostDocument> allPostDocuments = List.of(draftDoc, draftDoc2);
 
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
-        Mockito.when(postRepository.findAllByUserId(anyLong())).thenReturn(allPosts);
+        Mockito.when(postRepository.findAllByAuthorId(anyLong())).thenReturn(allPosts);
         Mockito.when(postDocRepository.findAllById(anyList())).thenReturn(allPostDocuments);
 
         PostResponseDTO.GetDraftList result = postService.getDraftList(token);

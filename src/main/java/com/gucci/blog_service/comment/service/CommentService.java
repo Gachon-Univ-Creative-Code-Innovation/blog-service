@@ -117,7 +117,7 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
         //권한체크
-        if (!comment.getUserId().equals(userId) && !comment.getPost().getUserId().equals(userId)) {
+        if (!comment.getUserId().equals(userId) && !comment.getPost().getAuthorId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 

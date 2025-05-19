@@ -53,7 +53,7 @@ public class PostSearchService {
         PostSearch postSearch = PostSearch.builder()
                 .postId(Long.toHexString(post.getPostId()))
                 .title(post.getTitle())
-                .author(post.getUserNickName())
+                .author(post.getAuthorNickName())
                 .tags(tags)
                 .content(postDocument.getContent())
                 .createdAt(post.getCreatedAt())
@@ -73,7 +73,7 @@ public class PostSearchService {
     public void updateViewCount(Long postId, Long viewCount) {
         try {
             UpdateRequest<Map<String, Object>, Map<String, Object>> request = UpdateRequest.of(u -> u
-                    .index("posts")
+                    .index("post")
                     .id(Long.toHexString(postId))
                     .doc(Map.of("viewCount", viewCount))
             );
