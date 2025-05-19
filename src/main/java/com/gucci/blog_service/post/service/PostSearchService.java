@@ -14,8 +14,10 @@ import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
+import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.post.repository.PostSearchRepository;
 import com.gucci.blog_service.tag.domain.Tag;
+import com.gucci.blog_service.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.client.RequestOptions;
 import org.slf4j.Logger;
@@ -33,17 +35,22 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostSearchService {
     private final PostSearchRepository postSearchRepository;
+    private final TagService tagService;
+    private final S3Service s3Service;
 
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
     private final Logger logger = LoggerFactory.getLogger(PostSearchService.class);
+    @Autowired
+    private PostRepository postRepository;
 
     /** mongodb post -> elasticsearch에 인덱싱 */
     public void index(Post post, PostDocument postDocument, List<String> tags) {
@@ -87,8 +94,12 @@ public class PostSearchService {
 
 
     public PostResponseDTO.GetPostList search(String keyword, Integer sortBy, Integer page) {
+        // init
         int size = 10;
         Pageable pageable = PageRequest.of(page, size);
+        List<PostResponseDTO.GetPost> dtoList = List.of();
+        Page<PostSearch> postSearchPage = Page.empty();
+
 
         try{
             Query query = buildSearchQuery(keyword);
@@ -117,19 +128,36 @@ public class PostSearchService {
                     break;
             }
 
-            // 1완성된 검색 요청(SearchRequest)을 Elasticsearch로 보내고, 결과를 받음
+            // 1. 완성된 검색 요청(SearchRequest)을 Elasticsearch로 보내고, 결과를 받음
             SearchResponse<PostSearch> searchResponse = elasticsearchClient.search(builder.build(), PostSearch.class);
 
-            // 결과에서 실제 게시글(PostSearch) 데이터만 추출해 리스트로 만듦
-            List<PostSearch> posts = searchResponse.hits().hits().stream()
+            // 2. 결과에서 실제 게시글(PostSearch) 데이터만 추출해 리스트로 만듦
+            List<PostSearch> searchPosts = searchResponse.hits().hits().stream()
                     .map(Hit::source)
                     .toList();
-            // Spring의 Page 객체로 변환해서 반환 (페이징 처리 및 총 결과 수 포함)
-            Page<PostSearch> postSearchPage = new PageImpl<>(posts, pageable, searchResponse.hits().total().value());
-            return PostResponseConverter.toGetPostList(postSearchPage);
+
+            // 3. Post 조회
+            List<Long> postIds = searchPosts.stream().map( s -> Long.parseLong(s.getPostId(), 16)).toList();
+            List<Post> posts = postRepository.findAllById(postIds);
+            Map<Long, Post> postMap = posts.stream().collect(Collectors.toMap(Post::getPostId, Function.identity()));
+
+            // 4. converter로 넘겨 DTO 매핑
+            dtoList = searchPosts.stream().map(sp -> {
+                        Long id = Long.parseLong(sp.getPostId(), 16);
+                        Post post = postMap.get(id);
+                        List<String> tagNameList = tagService.getTagNamesByPost(post);
+                        String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                        return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    })
+                    .toList();
+
+            //5. 페이징 DTO 생성
+            // Spring 의 Page 객체로 변환해서 반환 (페이징 처리 및 총 결과 수 포함)
+            postSearchPage = new PageImpl<>(searchPosts, pageable, searchResponse.hits().total().value());
+            return PostResponseConverter.toGetPostList(postSearchPage, dtoList);
         } catch (IOException e) {
             logger.error("Elasticsearch 검색 중 오류 발생: {}", e.getMessage(), e);
-            return PostResponseConverter.toGetPostList(Page.empty(pageable));
+            return PostResponseConverter.toGetPostList(postSearchPage, dtoList);
         }
     }
 

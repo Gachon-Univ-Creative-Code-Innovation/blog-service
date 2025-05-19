@@ -43,7 +43,7 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPostList toGetPostList(Page<Post> postPage, List<PostResponseDTO.GetPost> posts) {
+    public static PostResponseDTO.GetPostList toGetPostList(Page<?> postPage, List<PostResponseDTO.GetPost> posts) {
         return PostResponseDTO.GetPostList.builder()
                 .pageSize(postPage.getSize()) //페이지당 element개수
                 .pageNumber(postPage.getNumber()) //현재 페이지 번호
@@ -54,40 +54,7 @@ public class PostResponseConverter {
                 .postList(posts)
                 .build();
     }
-
-
-    /** pageImpl에서 변환*/
-    public static PostResponseDTO.GetPost toGetPost(PostSearch postSearch) {
-        return PostResponseDTO.GetPost.builder()
-                .postId(Long.parseLong(postSearch.getPostId(), 16))
-                .authorId(null) // PostSearch에 authorId 필드가 있으면 매핑, 없으면 null
-                .authorNickname(postSearch.getAuthor())
-                .title(postSearch.getTitle())
-                .summary(null) // summary 필드가 있으면 매핑
-                .thumbnail(null) // thumbnail 필드가 있으면 매핑
-                .view(postSearch.getViewCount()) // 오타: viewCount로 변경 권장
-                .tagNameList(postSearch.getTags())
-                .categoryCode(null) // categoryCode 필드 있으면 매핑
-                .createdAt(postSearch.getCreatedAt()) //.toLocalDateTime()) // OffsetDateTime → LocalDateTime 변환
-                .updatedAt(null) // updatedAt 필드 있으면 매핑
-                .build();
-    }
-
-    public static PostResponseDTO.GetPostList toGetPostList(Page<PostSearch> page) {
-        List<PostResponseDTO.GetPost> postList = page.getContent().stream()
-                .map(PostResponseConverter::toGetPost) // 위에서 만든 변환 메서드
-                .toList();
-
-        return PostResponseDTO.GetPostList.builder()
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .pageNumber(page.getNumber())
-                .pageSize(page.getSize())
-                .isFirst(page.isFirst())
-                .isLast(page.isLast())
-                .postList(postList)
-                .build();
-    }
+    
 
     /**
      * 임시저장 글

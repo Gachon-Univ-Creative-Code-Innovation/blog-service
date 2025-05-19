@@ -545,15 +545,4 @@ public class PostService {
         );
     }
 
-    /** postdoc content에서 첫번째 이미지(대표이미지) URL 반환 */
-    private String getFirstImageUrl(String content) {
-        String firstImage = htmlImageHelper.extractFirstImageFromSavedContent(content);
-        String presignedUrl = null;
-
-        if (firstImage != null) {
-            // 첫 번째 이미지의 objectKey를 presigned URL로 변환
-            presignedUrl = s3Service.getPresignedUrl(firstImage);
-        }
-        return presignedUrl;
-    }
 }
