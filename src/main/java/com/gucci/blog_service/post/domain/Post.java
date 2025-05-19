@@ -26,9 +26,9 @@ public class Post extends BaseEntity { //todo: user연결하기
     private Long parentPostId; //임시저장된 글의 원본 글 (발행되어있는)
 
     @Column(nullable = false)
-    private Long authorId;
+    private Long userId;
 
-    private String authorNickName;
+    private String userNickName;
 
     @Column(nullable = false)
     private String title;

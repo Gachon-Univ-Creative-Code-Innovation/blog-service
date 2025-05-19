@@ -24,6 +24,7 @@ public class CommentService {
 
     public Comment createComment(CommentRequestDTO.CreateComment createComment, String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
+        String userNickName = jwtTokenHelper.getNicknameFromToken(token);
 
         Post post = postService.getPostById(createComment.getPostId());
         Comment parentComment = null;
@@ -33,6 +34,7 @@ public class CommentService {
 
         Comment newComment = Comment.builder()
                 .userId(userId)
+                .userNickName(userNickName)
                 .post(post)
                 .content(createComment.getContent())
                 .parentComment(parentComment)
@@ -72,7 +74,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .createTime(comment.getCreatedAt())
                 .updateTime(comment.getUpdatedAt())
-                .authorNickname(comment.getUserId() == null ? null : "임시") //user-service와 통신해야함
+                .authorNickname(comment.getUserNickName())
                 .authorId(comment.getUserId())
                 .depth(depth)
                 .isDeleted(comment.getIsDeleted())
@@ -117,7 +119,7 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
         //권한체크
-        if (!comment.getUserId().equals(userId) && !comment.getPost().getAuthorId().equals(userId)) {
+        if (!comment.getUserId().equals(userId) && !comment.getPost().getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findAllByAuthorId(Long userId);
+    List<Post> findAllByUserId(Long userId);
     Optional<Post> findByParentPostId(Long parentPostId);
     Page<Post> findAllByPostIdIn(List<Long> parentPostIds, Pageable page);
     Page<Post> findAllByCategoryAndIsDraft(Category category, Boolean isDraft, Pageable page);

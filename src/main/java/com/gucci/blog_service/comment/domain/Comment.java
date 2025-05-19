@@ -29,6 +29,8 @@ public class Comment extends BaseEntity { //todo: user연결하기
 
     private Long userId;
 
+    private String userNickName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;

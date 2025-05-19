@@ -53,7 +53,7 @@ public class PostSearchService {
         PostSearch postSearch = PostSearch.builder()
                 .postId(Long.toHexString(post.getPostId()))
                 .title(post.getTitle())
-                .author(post.getAuthorNickName())
+                .author(post.getUserNickName())
                 .tags(tags)
                 .content(postDocument.getContent())
                 .createdAt(post.getCreatedAt())
