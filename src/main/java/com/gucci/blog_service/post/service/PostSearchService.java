@@ -5,9 +5,8 @@ import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.UpdateRequest;
+import co.elastic.clients.elasticsearch.core.*;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.gucci.blog_service.post.converter.PostResponseConverter;
 import com.gucci.blog_service.post.domain.Post;
@@ -90,6 +89,43 @@ public class PostSearchService {
             logger.error("Elasticsearch 조회수 업데이트 중 오류 발생: {}", e.getMessage(), e);
         }
 
+    }
+
+    /** 닉네임 동기화 */
+    public void updateUserNickname(List<String> postIds, String userNickName) {
+        try {
+
+            // 1) 각 ID마다 BulkOperation.update(...)를 만든다
+            List<BulkOperation> ops = postIds.stream()
+                    .map(hexId -> BulkOperation.of(op -> op
+                            .update(u -> u
+                                    .index("post")
+                                    .id(hexId)
+                                    .action(a -> a.doc(Map.of("author", userNickName)))
+                            )
+                    ))
+                    .toList();
+
+            // 2) BulkRequest 에 묶어서 전송
+            BulkRequest bulkReq = BulkRequest.of(b -> b
+                    .operations(ops)
+            );
+
+            // 3) 실제 호출
+            BulkResponse bulkResp = elasticsearchClient.bulk(bulkReq);
+
+            // 4) 실패 항목 로깅
+            if (bulkResp.errors()) {
+                bulkResp.items().forEach(item -> {
+                    if (item.error() != null) {
+                        logger.error("Failed to update id={} : {}",
+                                item.id(), item.error().reason());
+                    }
+                });
+            }
+        }catch (IOException e) {
+            logger.error("Elasticsearch 조회수 업데이트 중 오류 발생: {}", e.getMessage(), e);
+        }
     }
 
 

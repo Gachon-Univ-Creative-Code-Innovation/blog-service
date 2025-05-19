@@ -544,9 +544,13 @@ public class PostService {
         );
     }
 
+    @Transactional
     public void updateUserNickname(Long userId, String nickname) {
         List<Post> postList = postRepository.findAllByUserId(userId);
         postList.forEach(post -> post.update(nickname));
+
+        List<String> postSearchIds = postList.stream().map(post -> Long.toHexString(post.getPostId())).toList();
+        postSearchService.updateUserNickname(postSearchIds, nickname);
     }
 
 }
