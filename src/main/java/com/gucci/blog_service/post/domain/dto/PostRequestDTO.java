@@ -2,14 +2,18 @@ package com.gucci.blog_service.post.domain.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 public class PostRequestDTO {
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class createPost{
         @Schema(description = "임시저장 글로 생성할 경우 draftpostId 를 입력. 아니면 null 입력", example = "0")
         Long postId;
@@ -31,6 +35,8 @@ public class PostRequestDTO {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class updatePost{
         @Schema(description = "글 제목은 필수입니다", example = "글 제목")
         @NotBlank(message = "제목은 필수입니다.")
@@ -49,6 +55,8 @@ public class PostRequestDTO {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class createDraft{
         @Schema(description = "임시저장 글 수정 시 임시저장 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.")
         Long draftPostId;

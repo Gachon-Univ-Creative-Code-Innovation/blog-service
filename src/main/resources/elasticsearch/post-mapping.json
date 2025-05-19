@@ -17,7 +17,9 @@
     "tags": {
       "type": "keyword"
     },
-
+    "viewCount" : {
+      "type" : "Long"
+    },
     "createdAt": {
       "type": "date",
       "format": "yyyy-MM-dd'T'HH:mm:ss.SSS||yyyy-MM-dd HH:mm:ss.SSS||epoch_millis"

@@ -23,6 +23,8 @@ spring:
      # uri: ${LOCAL_MONGODB_URI}
     elasticsearch:
       uris: localhost:9200
+      repositories:
+        enabled: true
       connection-timeout: 5s
       socket-timeout: 3s
 
