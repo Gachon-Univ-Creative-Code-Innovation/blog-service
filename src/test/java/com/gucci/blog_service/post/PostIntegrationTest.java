@@ -64,7 +64,7 @@ public class PostIntegrationTest {
     @DisplayName("임시저장 -> 임시저장 조회 -> 임시저장  -> 발행 -> 조회 -> 임시저장 -> 수정 -> 임시저장 -> 삭제")
     void fullDraftPostTest() throws Exception {
         // 1. 임시저장 생성
-        PostRequestDTO.createDraft createDraft = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft createDraft = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(null)
                 .parentPostId(null)
                 .title("임시저장 제목")
@@ -98,7 +98,7 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.data.categoryCode").value(1L));
 
         // 3. 임시저장 수정
-        PostRequestDTO.createDraft createDraft2 = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft createDraft2 = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(draftId)
                 .parentPostId(null)
                 .title("임시저장2 제목")
@@ -134,7 +134,7 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.data.categoryCode").value(2L));
 
         // 4. 발행
-        PostRequestDTO.createPost createPost = PostRequestDTO.createPost.builder()
+        PostRequestDTO.CreatePost createPost = PostRequestDTO.CreatePost.builder()
                 .postId(draftId)
                 .content("최종 게시글 내용")
                 .title("최종 게시글 제목")
@@ -168,7 +168,7 @@ public class PostIntegrationTest {
 
 
         // 6. 임시저장
-        PostRequestDTO.createDraft createDraft3 = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft createDraft3 = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(null)
                 .parentPostId(postId)
                 .title("임시저장3 제목")
@@ -190,7 +190,7 @@ public class PostIntegrationTest {
         printPost();
 
         // 7. 임시저장 글로 게시글 수정
-        PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost updatePost = PostRequestDTO.UpdatePost.builder()
 //                .parentPostId(postId)
                 .title("수정된 제목")
                 .content("수정된 내용")
@@ -230,7 +230,7 @@ public class PostIntegrationTest {
 
 
         // 9. 임시저장
-        PostRequestDTO.createDraft createDraft4 = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft createDraft4 = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(null)
                 .parentPostId(postId)
                 .title("임시저장4 제목")
@@ -261,7 +261,7 @@ public class PostIntegrationTest {
     @DisplayName("발행 -> 조회 -> 수정 -> 삭제")
     void fullPostTest() throws Exception {
         // 1. 발행
-        PostRequestDTO.createPost createPost = PostRequestDTO.createPost.builder()
+        PostRequestDTO.CreatePost createPost = PostRequestDTO.CreatePost.builder()
                 .title("최초 발행 제목")
                 .content("최초 발행 내용")
                 .tagNameList(List.of("tag1", "tag2"))
@@ -292,7 +292,7 @@ public class PostIntegrationTest {
                 .andExpect(jsonPath("$.data.categoryCode").value(1L));
 
         // 3. 수정
-        PostRequestDTO.updatePost updatePost = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost updatePost = PostRequestDTO.UpdatePost.builder()
                 .title("수정된 제목")
                 .content("수정된 내용")
                 .tagNameList(List.of("tag1", "tag3"))

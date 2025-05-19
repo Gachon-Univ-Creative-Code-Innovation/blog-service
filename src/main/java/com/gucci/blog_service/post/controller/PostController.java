@@ -6,14 +6,11 @@ import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.service.PostService;
 import com.gucci.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,7 +25,7 @@ public class PostController {
     @PostMapping("")
     public ApiResponse<String> createPost(
             HttpServletRequest request,
-            @RequestBody @Valid PostRequestDTO.createPost post
+            @RequestBody @Valid PostRequestDTO.CreatePost post
     ){
         String token = request.getHeader("Authorization");
         Post newPost = postService.createPost(token, post);
@@ -89,7 +86,7 @@ public class PostController {
             HttpServletRequest request,
             @Schema(description = "수정할 글의 postId를 입력합니다. 임시저장글을 이용해 수정할 경우 paerentPostId를 입력합니다")
             @PathVariable Long postId,
-            @RequestBody @Valid PostRequestDTO.updatePost dto
+            @RequestBody @Valid PostRequestDTO.UpdatePost dto
     ){
         String token = request.getHeader("Authorization");
         Post post = postService.updatePost(token, postId, dto);
@@ -116,7 +113,7 @@ public class PostController {
     @PostMapping("/drafts")
     public ApiResponse<String> createDraft(
             HttpServletRequest request,
-            @RequestBody @Valid PostRequestDTO.createDraft dto
+            @RequestBody @Valid PostRequestDTO.CreateDraft dto
     ){
         String token = request.getHeader("Authorization");
         Post post = postService.createDraft(token, dto);
