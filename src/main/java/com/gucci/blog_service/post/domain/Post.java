@@ -37,6 +37,8 @@ public class Post extends BaseEntity { //todo: user연결하기
 
     private String summary;
 
+    private String thumbnail; //thumbnail 이미지의 objectkey만 저장
+
     @Column(columnDefinition = "bigint default 0", nullable = false)
     private Long view = 0L;
 
@@ -52,6 +54,11 @@ public class Post extends BaseEntity { //todo: user연결하기
         this.view += 1 ;
     }
 
+    public void update(String title, Category category, String thumbnail) {
+        this.title = title;
+        this.category = category;
+        this.thumbnail = thumbnail;
+    }
     public void update(String title, Category category) {
         this.title = title;
         this.category = category;

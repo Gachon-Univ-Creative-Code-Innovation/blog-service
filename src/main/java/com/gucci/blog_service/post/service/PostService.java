@@ -88,7 +88,7 @@ public class PostService {
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
             //post 업데이트
-            post.update(dto.getTitle(), category);
+            post.update(dto.getTitle(), category, htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()));
             post.publish();
             savedPost = postRepository.save(post);
         }
@@ -109,6 +109,7 @@ public class PostService {
                     .documentId(postDocument.getId())
                     .userId(userId)
                     .userNickName(authorNickName)
+                    .thumbnail(htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()))
                     .title(dto.getTitle())
                     .isDraft(false)
                     .category(category)
@@ -319,7 +320,7 @@ public class PostService {
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
         //Post 업데이트
-        post.update(dto.getTitle(), category);
+        post.update(dto.getTitle(), category, htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()));
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
@@ -360,7 +361,7 @@ public class PostService {
         List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(postDocument.getContent());
         objectKeys.forEach(s3Service::deleteFile);
 
-        //댓글, 태그, Doc, Post 삭제
+        //엘라스틱서치, 댓글, 태그, Doc, Post 삭제
         postSearchService.delete(post.getPostId());
         tagService.deleteAllByPost(post);
         commentRefService.deleteAllByPost(post);
