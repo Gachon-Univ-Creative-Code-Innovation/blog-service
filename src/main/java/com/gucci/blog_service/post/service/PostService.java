@@ -88,7 +88,8 @@ public class PostService {
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
             //post 업데이트
-            post.update(dto.getTitle(), category, htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()));
+            String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
+            post.update(dto.getTitle(), category, thumbnail);
             post.publish();
             savedPost = postRepository.save(post);
         }
@@ -104,12 +105,14 @@ public class PostService {
                     .build();
             savedPostDocument = postDocRepository.save(postDocument);
 
+            String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
+
             Post post = Post.builder()
                     .view(0L)
                     .documentId(postDocument.getId())
                     .userId(userId)
                     .userNickName(authorNickName)
-                    .thumbnail(htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()))
+                    .thumbnail(thumbnail)
                     .title(dto.getTitle())
                     .isDraft(false)
                     .category(category)
@@ -168,10 +171,10 @@ public class PostService {
                     if (postDocument == null) {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
-                    String firstImageUrl = getFirstImageUrl(postDocument.getContent());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
-                    return PostResponseConverter.toGetPostDto(post, firstImageUrl, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
         ).toList();
 
@@ -198,10 +201,10 @@ public class PostService {
                             if (postDocument == null) {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
-                            String firstImageUrl = getFirstImageUrl(postDocument.getContent());
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                             List<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                            return PostResponseConverter.toGetPostDto(post, firstImageUrl, tagNameList);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                         }
                 ).toList();
 
@@ -230,10 +233,10 @@ public class PostService {
                     if (postDocument == null) {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
-                    String firstImageUrl = getFirstImageUrl(postDocument.getContent());
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                    return PostResponseConverter.toGetPostDto(post, firstImageUrl, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
         ).toList();
 
@@ -260,10 +263,10 @@ public class PostService {
                     if (postDocument == null) {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
-                    String firstImageUrl = getFirstImageUrl(postDocument.getContent());
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     List<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                    return PostResponseConverter.toGetPostDto(post, firstImageUrl, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
         ).toList();
 
@@ -320,7 +323,8 @@ public class PostService {
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
         //Post 업데이트
-        post.update(dto.getTitle(), category, htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent()));
+        String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
+        post.update(dto.getTitle(), category, thumbnail);
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
