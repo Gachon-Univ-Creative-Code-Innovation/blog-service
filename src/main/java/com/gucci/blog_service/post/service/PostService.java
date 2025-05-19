@@ -544,4 +544,9 @@ public class PostService {
         );
     }
 
+    public void updateUserNickname(Long userId, String nickname) {
+        List<Post> postList = postRepository.findAllByUserId(userId);
+        postList.forEach(post -> post.update(nickname));
+    }
+
 }
