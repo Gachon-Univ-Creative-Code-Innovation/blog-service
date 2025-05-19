@@ -22,14 +22,19 @@ public class TagService {
 
     /**태그 리스트 저장*/
     @Transactional
-    public void createTags(Post post, List<String> tagNameList) {
+    public List<Tag> createTags(Post post, List<String> tagNameList, Long userId) {
         //태그 생성
         List<Tag> tagToSave = Optional.ofNullable(tagNameList)
                 .orElse(Collections.emptyList())
-                .stream().map(name -> Tag.builder().tagName(name).post(post).build()).toList();
+                .stream().map(name -> Tag.builder()
+                        .tagName(name)
+                        .userId(userId)
+                        .post(post)
+                        .build()
+                ).toList();
 
         //태그 저장
-        tagRepository.saveAll(tagToSave);
+        return tagRepository.saveAll(tagToSave);
     }
 
     /**태그 이름 조회*/
@@ -65,7 +70,6 @@ public class TagService {
                     .toList();
             tagRepository.saveAll(tags);
         }
-
     }
 
     /**게시글로 태그 삭제*/

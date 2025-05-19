@@ -23,6 +23,8 @@ public class Tag extends BaseEntity {
 
     private String tagName;
 
+    private Long userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     @OnDelete(action = OnDeleteAction.CASCADE)

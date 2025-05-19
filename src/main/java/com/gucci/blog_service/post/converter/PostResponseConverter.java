@@ -1,6 +1,7 @@
 package com.gucci.blog_service.post.converter;
 
 import com.gucci.blog_service.post.domain.Post;
+import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import org.springframework.data.domain.Page;
 
@@ -15,7 +16,7 @@ public class PostResponseConverter {
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
-                .authorNickname("임시")
+                .authorNickname(post.getUserNickName())
                 .view(post.getView())
                 .title(post.getTitle())
                 .content(content)
@@ -26,13 +27,13 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPost toGetPostDto(Post post, String firstImageUrl, List<String> tagNameList) {
+    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, List<String> tagNameList) {
         return PostResponseDTO.GetPost.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
                 .authorNickname(post.getUserNickName())
                 .title(post.getTitle())
-                .thumbnail(firstImageUrl)
+                .thumbnail(thumbnail)
                 .view(post.getView())
                 .categoryCode(post.getCategory().getCategoryId())
                 .summary(post.getSummary())
@@ -42,7 +43,7 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPostList toGetPostList(Page<Post> postPage, List<PostResponseDTO.GetPost> posts) {
+    public static PostResponseDTO.GetPostList toGetPostList(Page<?> postPage, List<PostResponseDTO.GetPost> posts) {
         return PostResponseDTO.GetPostList.builder()
                 .pageSize(postPage.getSize()) //페이지당 element개수
                 .pageNumber(postPage.getNumber()) //현재 페이지 번호
@@ -53,7 +54,7 @@ public class PostResponseConverter {
                 .postList(posts)
                 .build();
     }
-
+    
 
     /**
      * 임시저장 글

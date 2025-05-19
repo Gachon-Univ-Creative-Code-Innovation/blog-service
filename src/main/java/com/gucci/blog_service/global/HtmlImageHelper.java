@@ -17,9 +17,7 @@ public class HtmlImageHelper {
 
     private final S3Service s3Service;
 
-    /**
-     * HTML 내 img 태그의 src(objectKey)를 presigned URL로 치환
-     */
+    /** HTML 내 img 태그의 src(objectKey)를 presigned URL로 치환 */
     public String convertImageKeysToPresignedUrls(String html) {
         Document doc = Jsoup.parseBodyFragment(html);
         Elements imgTags = doc.select("img");
@@ -35,9 +33,7 @@ public class HtmlImageHelper {
         return doc.body().html();
     }
 
-    /**
-     * 저장된 게시글에서 첫번째 이미지 objectkey값 반환
-     */
+    /** 저장된 게시글에서 첫번째 이미지 objectkey값 반환 */
     public String extractFirstImageFromSavedContent(String html) {
         Document doc = Jsoup.parseBodyFragment(html);
         Elements imgTags = doc.select("img");

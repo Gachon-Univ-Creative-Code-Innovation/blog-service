@@ -1,4 +1,4 @@
-package com.gucci.blog_service.config.properties;
+package com.gucci.blog_service.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

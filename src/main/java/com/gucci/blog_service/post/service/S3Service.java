@@ -1,6 +1,6 @@
 package com.gucci.blog_service.post.service;
 
-import com.gucci.blog_service.config.properties.S3Config;
+import com.gucci.blog_service.config.S3Config;
 import com.gucci.blog_service.post.domain.dto.PresignedUrlResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,21 +52,25 @@ public class S3Service {
 
 
     public String getPresignedUrl(String objectUrl) {
-        String bucketName = s3Config.getBucketName(); //버킷 이름 가져오기
+        if (objectUrl != null) {
+            String bucketName = s3Config.getBucketName(); //버킷 이름 가져오기
 
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectUrl)
-                .build();
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectUrl)
+                    .build();
 
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .getObjectRequest(getObjectRequest)
-                .signatureDuration(Duration.ofMinutes(PRESIGNED_EXPIRATION)) //유효시간 설정
-                .build();
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .getObjectRequest(getObjectRequest)
+                    .signatureDuration(Duration.ofMinutes(PRESIGNED_EXPIRATION)) //유효시간 설정
+                    .build();
 
-        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
-        return presignedRequest.url().toString();
+            return presignedRequest.url().toString();
+        } else {
+            return null;
+        }
     }
 
     public void deleteFile(String objectKey) {
