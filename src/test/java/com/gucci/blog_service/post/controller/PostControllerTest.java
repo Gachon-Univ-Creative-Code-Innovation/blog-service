@@ -7,7 +7,6 @@ import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -48,7 +47,7 @@ public class PostControllerTest {
     @DisplayName("게시글 생성 테스트")
     void createPostTest() throws Exception {
         //given
-        PostRequestDTO.createPost dto = PostRequestDTO.createPost.builder()
+        PostRequestDTO.CreatePost dto = PostRequestDTO.CreatePost.builder()
                 .content("내용")
                 .title("제목")
                 .build();
@@ -90,7 +89,7 @@ public class PostControllerTest {
     @DisplayName("게시글 수정 테스트")
     void updatePostTest() throws Exception {
         Long postId = 1L;
-        PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost request = PostRequestDTO.UpdatePost.builder()
                 .title("제목")
                 .content("내용")
                 .build();
@@ -133,7 +132,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("임시저장 생성 테스트")
     void createDraftTest() throws Exception {
-        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft request = PostRequestDTO.CreateDraft.builder()
                 .title("제목")
                 .content("내용")
                 .build();

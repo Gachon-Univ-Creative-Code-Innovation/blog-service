@@ -70,7 +70,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("게시글 생성 : draftPostId != null (임시저장 후 발행)")
     void createPostAfterDraft() throws Exception {
-        PostRequestDTO.createPost dto = PostRequestDTO.createPost.builder()
+        PostRequestDTO.CreatePost dto = PostRequestDTO.CreatePost.builder()
                 .postId(1L)
                 .title("제목")
                 .content("내용")
@@ -106,7 +106,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("게시글 생성 : draftPostId == null (임시저장 하지 않고 발행)")
     void createPostTest() throws Exception {
-        PostRequestDTO.createPost dto = PostRequestDTO.createPost.builder()
+        PostRequestDTO.CreatePost dto = PostRequestDTO.CreatePost.builder()
                 .postId(null)
                 .title("제목")
                 .content("내용")
@@ -177,7 +177,7 @@ public class PostServiceTest {
         long postId = 1L;
         String postDocId = "postDoc";
 
-        PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost request = PostRequestDTO.UpdatePost.builder()
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
@@ -235,7 +235,7 @@ public class PostServiceTest {
         long postId = 1L;
         String postDocId = "postDoc";
 
-        PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost request = PostRequestDTO.UpdatePost.builder()
                 .content("수정 내용")
                 .title("수정 제목")
                 .build();
@@ -274,7 +274,7 @@ public class PostServiceTest {
         String postDocId = "postDoc";
         long postUserId = 10L;
 
-        PostRequestDTO.updatePost request = PostRequestDTO.updatePost.builder()
+        PostRequestDTO.UpdatePost request = PostRequestDTO.UpdatePost.builder()
                 .build();
 
         Post post = Post.builder()
@@ -416,7 +416,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("임시저장 생성 : 게시글 발행 전")
     public void createDraftBeforePublishTest(){
-        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft request = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(null)
                 .parentPostId(null)
                 .content("내용")
@@ -447,7 +447,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("임시저장 생성 : 게시글 발행 후")
     public void createDraftAfterPublishTest(){
-        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft request = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(null)
                 .parentPostId(10L)
                 .content("내용")
@@ -482,7 +482,7 @@ public class PostServiceTest {
     @DisplayName("임시저장 생성 : 임시저장 글을 또 임시저장")
     public void createDraftTest() {
         String postDocId = "postDoc";
-        PostRequestDTO.createDraft request = PostRequestDTO.createDraft.builder()
+        PostRequestDTO.CreateDraft request = PostRequestDTO.CreateDraft.builder()
                 .draftPostId(1L)
                 .parentPostId(10L)
                 .content("내용")

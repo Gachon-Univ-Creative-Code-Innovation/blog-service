@@ -14,7 +14,6 @@ import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
-import com.gucci.blog_service.tag.domain.Tag;
 import com.gucci.blog_service.tag.service.TagService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
@@ -59,7 +58,7 @@ public class PostService {
 
     /** 게시글 생성 */
     @Transactional
-    public Post createPost(String token, PostRequestDTO.createPost dto) {
+    public Post createPost(String token, PostRequestDTO.CreatePost dto) {
         Post savedPost;
         PostDocument savedPostDocument;
         List<String> savedTags;
@@ -276,7 +275,7 @@ public class PostService {
 
     /** 게시글 수정 */
     @Transactional
-    public Post updatePost(String token, Long postId, PostRequestDTO.updatePost dto) {
+    public Post updatePost(String token, Long postId, PostRequestDTO.UpdatePost dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         Post post;
@@ -380,7 +379,7 @@ public class PostService {
 
     /** 임시저장 생성 */
     @Transactional
-    public Post createDraft(String token, PostRequestDTO.createDraft dto) {
+    public Post createDraft(String token, PostRequestDTO.CreateDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
         String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
 
@@ -543,6 +542,15 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
         );
+    }
+
+    @Transactional
+    public void updateUserNickname(Long userId, String nickname) {
+        List<Post> postList = postRepository.findAllByUserId(userId);
+        postList.forEach(post -> post.update(nickname));
+
+        List<String> postSearchIds = postList.stream().map(post -> Long.toHexString(post.getPostId())).toList();
+        postSearchService.updateUserNickname(postSearchIds, nickname);
     }
 
 }

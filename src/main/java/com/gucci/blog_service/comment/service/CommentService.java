@@ -125,4 +125,10 @@ public class CommentService {
 
         comment.setDeleted();
     }
+
+    @Transactional
+    public void updateUserNickname(Long userId, String nickName) {
+        List<Comment> commentList = commentRepository.findAllByUserId(userId);
+        commentList.forEach(comment -> comment.update(nickName));
+    }
 }
