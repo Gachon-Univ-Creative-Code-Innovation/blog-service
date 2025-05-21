@@ -2,7 +2,7 @@ package com.gucci.blog_service.post.service;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.service.CategoryService;
-import com.gucci.blog_service.client.user.api.UserServiceApi;
+import com.gucci.blog_service.client.user.api.UserServiceAPI;
 import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.global.HtmlImageHelper;
@@ -41,7 +41,7 @@ public class PostService {
     private final CategoryService categoryService;
     private final PostSearchService postSearchService;
 
-    private final UserServiceApi userServiceApi;
+    private final UserServiceAPI userServiceApi;
 
     private final JwtTokenHelper jwtTokenHelper;
 
