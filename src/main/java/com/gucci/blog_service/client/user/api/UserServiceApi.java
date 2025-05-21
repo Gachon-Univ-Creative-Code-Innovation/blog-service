@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
         name = "user-service-client",
-        url = "${feign.user-service.url}",
+        url = "${feign.user-service.url}/api/user-service",
         configuration = UserServiceFeignConfig.class
 )
 public interface UserServiceAPI {
-    @GetMapping(value = "/following")
+    @GetMapping(value = "/follow/followers")
     UserServiceResponseDTO.UserFollowingIds getUserFollowingId(
             @RequestHeader("Authorization") String token
     );

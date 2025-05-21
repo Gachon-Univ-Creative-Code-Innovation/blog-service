@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "matching-service",
-        url = "${feign.matching-service.url}",
+        url = "${feign.matching-service.url}/api/matching-service",
         configuration = MatchingServiceFeignConfig.class
 )
 public interface MatchingServiceAPI {
 
-    @GetMapping("/api/matching-service/represent-tags")
+    @GetMapping("/represent-tags")
     MatchingServiceResponseDTO.RepresentTags getRepresentTags(
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("userID") Long userId,

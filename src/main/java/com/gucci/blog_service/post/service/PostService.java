@@ -2,8 +2,8 @@ package com.gucci.blog_service.post.service;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.service.CategoryService;
-import com.gucci.blog_service.client.user.api.UserServiceAPI;
-import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
+import com.gucci.blog_service.client.matching.client.MatchingServiceClient;
+import com.gucci.blog_service.client.user.client.UserServiceClient;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.global.HtmlImageHelper;
 import com.gucci.blog_service.global.JwtTokenHelper;
@@ -41,7 +41,8 @@ public class PostService {
     private final CategoryService categoryService;
     private final PostSearchService postSearchService;
 
-    private final UserServiceAPI userServiceApi;
+    private final UserServiceClient userServiceClient;
+    private final MatchingServiceClient matchingServiceClient;
 
     private final JwtTokenHelper jwtTokenHelper;
 
@@ -148,11 +149,11 @@ public class PostService {
     /** 팔로잉하는 사용자 글 조회 */
     public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
         //user-service에서 following 목록 가져오기
-        UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
+        List<Long> followingUserIds = userServiceClient.getUserFollowingIds(token);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
 
-        Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
+        Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds, pageable);
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
@@ -277,11 +278,12 @@ public class PostService {
         // 사용자 정보 조회
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        // 사용자 태그 가져오기 todo: 임시
-        Set<String> userTags = Set.of("강아지", "고양이");
+        // 사용자 태그 가져오기
+        List<String> tags = matchingServiceClient.getUserRepresentTags(token, userId);
+        Set<String> userTags = Set.copyOf(tags);
 
         // 태그가 없는 경우 최신 글 추천
-        if (userTags == null || userTags.isEmpty()) {
+        if (userTags.isEmpty()) {
             postPage = postRepository.findAll(PageRequest.of(
                     pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending()
             ));
