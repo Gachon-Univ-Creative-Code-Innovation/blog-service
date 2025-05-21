@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,10 +19,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByPostIdIn(List<Long> parentPostIds, Pageable page);
     Page<Post> findAllByCategoryAndIsDraft(Category category, Boolean isDraft, Pageable page);
 
-    @Query("select p from Post p" +
-            "    where p.view > 100" +
-            "order by p.createdAt desc")
-    Page<Post> findAllTrending(Pageable page);
+    @Query("""
+        select p
+        from Post p
+        where p.createdAt >= :sevenDaysAgo
+        order by p.view desc
+        """)
+    Page<Post> findAllTrending(LocalDateTime sevenDaysAgo, Pageable page);
 
     Page<Post> findAllByIsDraft(Boolean isDraft, Pageable page);
 }

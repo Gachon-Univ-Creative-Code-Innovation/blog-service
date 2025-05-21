@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -51,6 +52,7 @@ public class PostService {
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
+    private final static Integer pageSize = 10;
 
     /**
      * 게시글
@@ -129,6 +131,7 @@ public class PostService {
     }
 
     /** 게시글 하나 상세조회  */
+    @Transactional
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
         Post post = postRepository.findById(postId).
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
@@ -151,7 +154,6 @@ public class PostService {
         //user-service에서 following 목록 가져오기
         UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
 
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
 
         Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
@@ -183,7 +185,6 @@ public class PostService {
 
     /** 전체 글 조회 */
     public PostResponseDTO.GetPostList getPostAll(Integer page) {
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByIsDraft(false, pageable);
 
@@ -215,7 +216,6 @@ public class PostService {
     public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByCategoryAndIsDraft(category, false, pageable);
 
@@ -245,8 +245,8 @@ public class PostService {
 
     /** 인기글 조회 */
     public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
-        int pageSize = 10;
-        Page<Post> postPage = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        Page<Post> postPage = postRepository.findAllTrending(weekAgo, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
