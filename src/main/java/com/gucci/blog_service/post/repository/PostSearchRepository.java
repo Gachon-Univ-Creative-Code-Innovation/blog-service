@@ -10,4 +10,5 @@ public interface PostSearchRepository extends ElasticsearchRepository<PostSearch
     // match 쿼리처럼 작동함
     List<PostSearch> findByTitleContainingOrContentContaining(String title, String content);
 
+    List<PostSearch> findSimilarByTags(List<String> tags);
 }

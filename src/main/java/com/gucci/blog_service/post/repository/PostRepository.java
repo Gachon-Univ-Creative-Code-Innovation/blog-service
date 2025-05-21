@@ -7,10 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -28,4 +30,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllTrending(LocalDateTime sevenDaysAgo, Pageable page);
 
     Page<Post> findAllByIsDraft(Boolean isDraft, Pageable page);
+
+
+    // 태그를 포함하는 글 조회
+    @Query("""
+        select distinct p
+        from Tag t
+        join t.post p
+        where t.tagName in (:tagNames)
+        and p.isDraft = false
+        """)
+    List<Post> findByTagsContaining(String tagNames);
+
+    // 최신 글 조회
+    List<Post> findTop10ByOrderByCreatedAtDesc();
 }

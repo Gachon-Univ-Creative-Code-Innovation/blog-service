@@ -19,15 +19,14 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,7 @@ public class PostService {
     public Post createPost(String token, PostRequestDTO.CreatePost dto) {
         Post savedPost;
         PostDocument savedPostDocument;
-        List<String> savedTags;
+        Set<String> savedTags;
 
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
         String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
@@ -137,7 +136,7 @@ public class PostService {
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
@@ -172,7 +171,7 @@ public class PostService {
                     if (postDocument == null) {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
@@ -202,7 +201,7 @@ public class PostService {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                         }
@@ -233,7 +232,7 @@ public class PostService {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
@@ -263,7 +262,7 @@ public class PostService {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
@@ -271,6 +270,69 @@ public class PostService {
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
 
+    }
+
+    /** 추천글 조회 - 사용자 태그 기반으로 글 추천 */
+    public PostResponseDTO.GetPostList getRecommendPostList(String token, Integer page) {
+        Page<Post> postPage;
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        // 사용자 정보 조회
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        // 사용자 태그 가져오기 todo: 임시
+        Set<String> userTags = Set.of("강아지", "고양이");
+
+        // 태그가 없는 경우 최신 글 추천
+        if (userTags == null || userTags.isEmpty()) {
+            postPage = postRepository.findAll(PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending()
+            ));
+        }
+        else {
+            // 사용자 태그와 일치하는 글 찾기 (태그 개수에 따라 점수 부여)
+            Map<Post, Integer> postScores = new HashMap<>();
+
+            // 각 태그에 해당하는 글 조회
+            for (String tag : userTags) {
+                List<Post> postsWithTag = postRepository.findByTagsContaining(tag);
+
+                for (Post post : postsWithTag) {
+                    // 태그 일치 점수 계산
+                    Set<String> tagNames = tagService.getTagNamesByPost(post);
+                    int tagMatchCount = countMatchingTags(tagNames, userTags);
+
+                    // 기존 점수에 추가
+                    postScores.put(post, postScores.getOrDefault(post, 0) + tagMatchCount);
+                }
+            }
+
+            // 점수 내림차순으로 정렬
+            List<Post> sortedPost = postScores.entrySet().stream()
+                    .sorted(Map.Entry.<Post, Integer>comparingByValue().reversed())
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            //page 만들기
+            int total = sortedPost.size();
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), total);
+            List<Post> content = start <= end ? sortedPost.subList(start, end) : List.of();
+            postPage = new PageImpl<>(content, pageable, total);
+        }
+
+        // dto 만들기
+        List<PostResponseDTO.GetPost> postRes = postPage.stream()
+                .map(
+                        post -> {
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        }
+                ).toList();
+
+        return PostResponseConverter.toGetPostList(postPage, postRes);
     }
 
     /** 게시글 수정 */
@@ -317,7 +379,7 @@ public class PostService {
 
         //tag 업데이트
         tagService.updateByTagNameList(post, dto.getTagNameList());
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
@@ -476,7 +538,7 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
         //image url과 함께 반환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
@@ -502,7 +564,7 @@ public class PostService {
                             if (postDocument == null) {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
-                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseConverter.toGetDraftDto(post, postDocument.getContent(), tagNameList);
                         }
@@ -551,6 +613,21 @@ public class PostService {
 
         List<String> postSearchIds = postList.stream().map(post -> Long.toHexString(post.getPostId())).toList();
         postSearchService.updateUserNickname(postSearchIds, nickname);
+    }
+
+    /** 두 태그 집합 간 일치하는 태그 수 계산 */
+    private int countMatchingTags(Set<String> tagNames, Set<String> userTags) {
+        if (tagNames == null || userTags == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (String tag : tagNames) {
+            if (userTags.contains(tag)) {
+                count++;
+            }
+        }
+        return count;
     }
 
 }

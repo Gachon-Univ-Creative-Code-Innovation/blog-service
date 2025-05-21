@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.*;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -29,7 +30,7 @@ public class PostSearch {
     private String author;
 
     @Field(type = FieldType.Keyword)
-    private List<String> tags;
+    private Set<String> tags;
 
     @Field(type = FieldType.Text, analyzer = "korean")
     private String content;

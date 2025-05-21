@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class PostResponseDTO {
 
@@ -18,7 +19,7 @@ public class PostResponseDTO {
         String title;
         String content;
         Long view;
-        List<String> tagNameList;
+        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
@@ -34,7 +35,7 @@ public class PostResponseDTO {
         String summary;
         String thumbnail;
         Long view;
-        List<String> tagNameList;
+        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
@@ -70,7 +71,7 @@ public class PostResponseDTO {
         String authorNickname;
         String title;
         String content;
-        List<String> tagNameList;
+        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
@@ -82,7 +83,7 @@ public class PostResponseDTO {
         Long draftPostId;
         String title;
         String content;
-        List<String> tagNameList;
+        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;

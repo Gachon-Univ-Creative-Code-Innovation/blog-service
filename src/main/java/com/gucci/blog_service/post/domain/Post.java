@@ -2,6 +2,7 @@ package com.gucci.blog_service.post.domain;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.config.common.BaseEntity;
+import com.gucci.blog_service.tag.domain.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -49,6 +54,10 @@ public class Post extends BaseEntity { //todo: user연결하기
     @JoinColumn(name = "category_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Category category;
+
+//    // 양방향 관계 설정
+//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Tag> tags = new ArrayList<>();
 
     public void updateView() {
         this.view = this.view + 1;
