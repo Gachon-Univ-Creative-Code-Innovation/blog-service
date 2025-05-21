@@ -4,7 +4,6 @@ import com.gucci.blog_service.client.matching.decoder.MatchingServiceFeignErrorD
 import feign.Logger;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 public class MatchingServiceFeignConfig {
     @Bean

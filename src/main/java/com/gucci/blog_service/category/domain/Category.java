@@ -1,8 +1,10 @@
 package com.gucci.blog_service.category.domain;
 
 import com.gucci.blog_service.category.domain.type.CategoryType;
-import com.gucci.blog_service.config.common.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

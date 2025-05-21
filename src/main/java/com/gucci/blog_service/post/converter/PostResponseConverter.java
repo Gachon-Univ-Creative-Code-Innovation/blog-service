@@ -1,7 +1,6 @@
 package com.gucci.blog_service.post.converter;
 
 import com.gucci.blog_service.post.domain.Post;
-import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import org.springframework.data.domain.Page;
 

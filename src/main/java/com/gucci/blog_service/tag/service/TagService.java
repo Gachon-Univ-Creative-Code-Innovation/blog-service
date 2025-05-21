@@ -1,14 +1,16 @@
 package com.gucci.blog_service.tag.service;
 
 import com.gucci.blog_service.post.domain.Post;
-import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.tag.domain.Tag;
 import com.gucci.blog_service.tag.repository.TagRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

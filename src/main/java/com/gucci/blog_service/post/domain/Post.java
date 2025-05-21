@@ -2,7 +2,6 @@ package com.gucci.blog_service.post.domain;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.config.common.BaseEntity;
-import com.gucci.blog_service.tag.domain.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,10 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
