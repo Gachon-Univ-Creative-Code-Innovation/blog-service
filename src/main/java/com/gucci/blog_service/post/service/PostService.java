@@ -23,10 +23,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -291,25 +288,26 @@ public class PostService {
         }
         else {
             // 사용자 태그와 일치하는 글 찾기 (태그 개수에 따라 점수 부여)
-            Map<Post, Integer> postScores = new HashMap<>();
+            Map<Post, Double> postScores = new HashMap<>();
 
-            // 각 태그에 해당하는 글 조회
+            // 각 태그에 해당하는 글 조회 - 본인이 작성한 글은 제외
             for (String tag : userTags) {
-                List<Post> postsWithTag = postRepository.findByTagsContaining(tag);
+                List<Post> postsWithTag = postRepository.findByTagsContaining(tag, userId
+                );
 
                 for (Post post : postsWithTag) {
                     // 태그 일치 점수 계산
                     Set<String> tagNames = tagService.getTagNamesByPost(post);
-                    int tagMatchCount = countMatchingTags(tagNames, userTags);
+                    double tagMatchCount = calculateTagSimilarity(tagNames, userTags);
 
                     // 기존 점수에 추가
-                    postScores.put(post, postScores.getOrDefault(post, 0) + tagMatchCount);
+                    postScores.put(post, postScores.getOrDefault(post, 0.0) + tagMatchCount);
                 }
             }
 
             // 점수 내림차순으로 정렬
             List<Post> sortedPost = postScores.entrySet().stream()
-                    .sorted(Map.Entry.<Post, Integer>comparingByValue().reversed())
+                    .sorted(Map.Entry.<Post, Double>comparingByValue().reversed())
                     .map(Map.Entry::getKey)
                     .toList();
 
@@ -615,19 +613,21 @@ public class PostService {
         postSearchService.updateUserNickname(postSearchIds, nickname);
     }
 
-    /** 두 태그 집합 간 일치하는 태그 수 계산 */
-    private int countMatchingTags(Set<String> tagNames, Set<String> userTags) {
-        if (tagNames == null || userTags == null) {
-            return 0;
+    /**
+     * 태그 유사도 계산 (Jaccard 유사도) : 유저 대표태그와 정확히 딱 맞을수록 점수 높음
+     */
+    private double calculateTagSimilarity(Set<String> postTags, Set<String> refTags) {
+        if (postTags == null || refTags == null || postTags.isEmpty() || refTags.isEmpty()) {
+            return 0.0;
         }
 
-        int count = 0;
-        for (String tag : tagNames) {
-            if (userTags.contains(tag)) {
-                count++;
-            }
-        }
-        return count;
+        Set<String> intersection = new HashSet<>(postTags);
+        intersection.retainAll(refTags);
+
+        Set<String> union = new HashSet<>(postTags);
+        union.addAll(refTags);
+
+        return (double) intersection.size() / union.size();
     }
 
 }

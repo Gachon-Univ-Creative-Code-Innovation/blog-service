@@ -37,10 +37,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         select distinct p
         from Tag t
         join t.post p
-        where t.tagName in (:tagNames)
+        where t.tagName in :tagName
         and p.isDraft = false
+        and p.userId <> :userId
         """)
-    List<Post> findByTagsContaining(String tagNames);
+    List<Post> findByTagsContaining(String tagName, Long userId);
 
     // 최신 글 조회
     List<Post> findTop10ByOrderByCreatedAtDesc();
