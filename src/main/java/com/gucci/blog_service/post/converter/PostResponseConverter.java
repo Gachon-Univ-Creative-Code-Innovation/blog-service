@@ -22,6 +22,7 @@ public class PostResponseConverter {
                 .content(content)
                 .tagNameList(tagNameList)
                 .categoryCode(post.getCategory().getCategoryType().getCode())
+                .postType(post.getPostType().name())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();

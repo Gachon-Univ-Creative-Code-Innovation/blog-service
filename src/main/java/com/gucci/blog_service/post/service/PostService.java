@@ -179,9 +179,15 @@ public class PostService {
 
 
     /** 전체 글 조회 */
-    public PostResponseDTO.GetPostList getPostAll(Integer page) {
+    public PostResponseDTO.GetPostList getPostAll(String postType, Integer page) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-        Page<Post> postPage = postRepository.findAllByIsDraft(false, pageable);
+        Page<Post> postPage;
+
+        if (postType.equals(PostType.POST.name())) {
+            postPage= postRepository.findAllByIsDraftAndPostType(false, PostType.POST, pageable);
+        } else {
+            postPage = postRepository.findAllByIsDraftAndPostType(false, PostType.MATCHING, pageable);
+        }
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();

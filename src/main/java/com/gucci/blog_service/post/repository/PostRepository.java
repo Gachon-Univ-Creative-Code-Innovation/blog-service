@@ -27,8 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         """)
     Page<Post> findAllTrending(LocalDateTime sevenDaysAgo, Pageable page);
 
-    Page<Post> findAllByIsDraft(Boolean isDraft, Pageable page);
-
+    Page<Post> findAllByIsDraftAndPostType(Boolean isDraft, PostType postType, Pageable page);
 
     // 태그를 포함하는 글 조회
     @Query("""
