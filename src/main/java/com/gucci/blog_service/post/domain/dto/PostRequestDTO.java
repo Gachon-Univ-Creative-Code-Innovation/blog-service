@@ -1,5 +1,6 @@
 package com.gucci.blog_service.post.domain.dto;
 
+import com.gucci.blog_service.post.domain.enums.PostType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,11 @@ public class PostRequestDTO {
 
         @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.", example = "1")
         Long categoryCode;
+
+        @Schema(description = "postType을 입력합니다. POST, MATCHING", example = "POST")
+        private PostType postType;
+
+
     }
 
     @Getter

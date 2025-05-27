@@ -60,6 +60,7 @@ public class PostSearchService {
                 .content(postDocument.getContent())
                 .createdAt(post.getCreatedAt())
                 .viewCount(post.getView())
+                .postType(post.getPostType())
                 .build();
 
         postSearchRepository.save(postSearch);

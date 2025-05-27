@@ -21,7 +21,7 @@ public class PostController {
     /**
      * 블로그 글
      */
-    @Operation(summary = "게시글 생성", description = "게시글을 생성합니다.")
+    @Operation(summary = "게시글 생성", description = "게시글을 생성합니다. 게시글 타입은 POST, MATCHING 입니다.")
     @PostMapping("")
     public ApiResponse<String> createPost(
             HttpServletRequest request,
