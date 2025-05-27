@@ -87,7 +87,7 @@ public class PostService {
 
             //post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail, dto.getPostType());
+            post.update(dto.getTitle(), category, thumbnail);
             post.publish();
             savedPost = postRepository.save(post);
         }
@@ -380,7 +380,7 @@ public class PostService {
 
         //Post 업데이트
         String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-        post.update(dto.getTitle(), category, thumbnail, PostType.POST);
+        post.update(dto.getTitle(), category, thumbnail);
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
@@ -457,6 +457,7 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .category(category)
+                    .postType(dto.getPostType())
                     .build();
             Post savedPost = postRepository.save(post);
 
@@ -486,6 +487,7 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(true)
                     .category(category)
+                    .postType(dto.getPostType())
                     .build();
             Post savedPost = postRepository.save(post);
 

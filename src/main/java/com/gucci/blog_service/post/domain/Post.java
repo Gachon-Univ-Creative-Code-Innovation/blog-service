@@ -62,11 +62,10 @@ public class Post extends BaseEntity { //todo: user연결하기
         this.view = this.view + 1;
     }
 
-    public void update(String title, Category category, String thumbnail, PostType postType) {
+    public void update(String title, Category category, String thumbnail) {
         this.title = title;
         this.category = category;
         this.thumbnail = thumbnail;
-        this.postType = postType;
     }
     public void update(String title, Category category) {
         this.title = title;
