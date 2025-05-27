@@ -24,7 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         from Post p
         where p.createdAt >= :sevenDaysAgo
                 and p.postType in :postType
-                and p.isDraft == false
+                and p.isDraft = false
         order by p.view desc
         """)
     Page<Post> findAllTrending(LocalDateTime sevenDaysAgo, PostType postType, Pageable page);
