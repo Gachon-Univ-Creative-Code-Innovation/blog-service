@@ -42,7 +42,7 @@ public class TagService {
     }
 
     /**태그 리스트 업데이트*/
-    public void updateByTagNameList(Post post, List<String> newTagNameList) {
+    public Set<String> updateByTagNameList(Post post, List<String> newTagNameList) {
         if (newTagNameList == null) {
             newTagNameList = Collections.emptyList();
         }
@@ -69,6 +69,8 @@ public class TagService {
                     .toList();
             tagRepository.saveAll(tags);
         }
+
+        return getTagNamesByPost(post);
     }
 
     /**게시글로 태그 삭제*/

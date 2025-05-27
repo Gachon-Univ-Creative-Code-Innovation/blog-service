@@ -12,6 +12,7 @@ import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.dto.PostRequestDTO;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
+import com.gucci.blog_service.post.domain.enums.PostType;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.tag.service.TagService;
@@ -40,6 +41,7 @@ public class PostService {
     private final TagService tagService;
     private final CategoryService categoryService;
     private final PostSearchService postSearchService;
+    private final PostQueryService postQueryService;
 
     private final UserServiceClient userServiceClient;
     private final MatchingServiceClient matchingServiceClient;
@@ -67,14 +69,12 @@ public class PostService {
 
         //임시저장 글이었을 경우
         if (dto.getPostId() != null) {
-            Post post = postRepository.findById(dto.getPostId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-            PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+
+            Post post = postQueryService.getPost(dto.getPostId());
+            PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
 
             //태그 업데이트
-            tagService.updateByTagNameList(post, dto.getTagNameList());
-            savedTags = tagService.getTagNamesByPost(post);
+            savedTags = tagService.updateByTagNameList(post, dto.getTagNameList());
 
             //img src objectKey 정제
             String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
@@ -87,7 +87,7 @@ public class PostService {
 
             //post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail);
+            post.update(dto.getTitle(), category, thumbnail, PostType.POST);
             post.publish();
             savedPost = postRepository.save(post);
         }
@@ -114,6 +114,7 @@ public class PostService {
                     .title(dto.getTitle())
                     .isDraft(false)
                     .category(category)
+                    .postType(PostType.POST)
                     .build();
             savedPost = postRepository.save(post);
 
@@ -130,10 +131,8 @@ public class PostService {
     /** 게시글 하나 상세조회  */
     @Transactional
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
-        Post post = postRepository.findById(postId).
-                orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
+        Post post = postQueryService.getPost(postId);
+        PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
         Set<String> tagNameList = tagService.getTagNamesByPost(post);
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
@@ -152,8 +151,7 @@ public class PostService {
         List<Long> followingUserIds = userServiceClient.getUserFollowingIds(token);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-
-        Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds, pageable);
+        Page<Post> postPage = postRepository.findAllByPostTypeAndPostIdIn(PostType.POST, followingUserIds, pageable);
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
@@ -343,10 +341,8 @@ public class PostService {
         Post post;
         PostDocument postDocument;
 
-        post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+        post = postQueryService.getPost(postId);
+        postDocument = postQueryService.getPostDocument(post.getDocumentId());
 
 
         //권한 체크. 글 작성자만 수정 가능
@@ -357,8 +353,7 @@ public class PostService {
         // 1. 임시저장 글이 있을 경우 삭제
         Post draft = postRepository.findByParentPostId(postId).orElse(null);
         if (draft != null) {
-            PostDocument draftDocument = postDocRepository.findById(post.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+            PostDocument draftDocument = postQueryService.getPostDocument(draft.getDocumentId());
 
             //s3에서 사진 삭제
             List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDocument.getContent());
@@ -385,7 +380,7 @@ public class PostService {
 
         //Post 업데이트
         String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-        post.update(dto.getTitle(), category, thumbnail);
+        post.update(dto.getTitle(), category, thumbnail, PostType.POST);
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
@@ -396,10 +391,8 @@ public class PostService {
     public void deletePost(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
+        Post post = postQueryService.getPost(postId);
+        PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
         //권한 체크. 글 작성자만 삭제 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
@@ -408,8 +401,7 @@ public class PostService {
         //임시저장 글 삭제
         Post draft = postRepository.findByParentPostId(postId).orElse(null);
         if (draft != null) {
-            PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));// todo : NOT_FOUND_POST_CONTENT
+            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId());
 
             //s3에서 사진 삭제
             List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDoc.getContent());
@@ -502,10 +494,8 @@ public class PostService {
         }
         // 임시저장 글을 또 임시저장
         else {
-            Post draft = postRepository.findById(dto.getDraftPostId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-            PostDocument draftDoc = postDocRepository.findById(draft.getDocumentId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+            Post draft = postQueryService.getPost(dto.getDraftPostId());
+            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId()); // todo : NOT_FOUND_POST_CONTENT
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
@@ -526,10 +516,8 @@ public class PostService {
     public PostResponseDTO.GetDraftDetail getDraftDetail(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); // todo : NOT_FOUND_POST_CONTENT
+        Post post = postQueryService.getPost(postId);
+        PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
 
         if (!post.isDraft()) { // 임시저장 글이 아님
             throw new CustomException(ErrorCode.INVALID_ARGUMENT);
@@ -580,10 +568,8 @@ public class PostService {
     public void deleteDraft(String token, Long postId) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
-        PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
+        Post post = postQueryService.getPost(postId);
+        PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
         //권한 체크. 글 작성자만 삭제 가능
         if (!post.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
@@ -600,10 +586,11 @@ public class PostService {
 
 
 
+
+
+
     public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new CustomException(ErrorCode.INVALID_ARGUMENT) //todo : NOT_FOUND_POST
-        );
+        return postQueryService.getPost(postId);
     }
 
     @Transactional
