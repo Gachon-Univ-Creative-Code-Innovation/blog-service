@@ -3,7 +3,10 @@ package com.gucci.blog_service.comment.domain;
 import com.gucci.blog_service.config.common.BaseEntity;
 import com.gucci.blog_service.post.domain.Post;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 

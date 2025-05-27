@@ -30,14 +30,16 @@ spring:
 
 aws:
   s3:
-    bucket: ${S3_BUCKET_NAME} # 임시
+    bucket: ${S3_BUCKET_NAME} # todo : 임시
     region: ${S3_REGION}
     access-key: ${S3_ACCESS_KEY}
     secret-key: ${S3_SECRET_KEY}
 
 feign:
   user-service:
-    url : "http://localhost:8081"
+    url : "http://localhost:8081" #todo : 실제 url 로 바꾸기
+  matching-service:
+    url : "http://localhost:8002" #todo : 실제 url 로 바꾸기
 
 springdoc:
   swagger-ui:

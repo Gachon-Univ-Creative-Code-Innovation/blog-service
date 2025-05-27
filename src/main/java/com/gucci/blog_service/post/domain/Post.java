@@ -50,8 +50,12 @@ public class Post extends BaseEntity { //todo: user연결하기
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Category category;
 
+//    // 양방향 관계 설정
+//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Tag> tags = new ArrayList<>();
+
     public void updateView() {
-        this.view += 1 ;
+        this.view = this.view + 1;
     }
 
     public void update(String title, Category category, String thumbnail) {

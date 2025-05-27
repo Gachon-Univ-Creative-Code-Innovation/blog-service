@@ -1,18 +1,18 @@
 package com.gucci.blog_service.post.converter;
 
 import com.gucci.blog_service.post.domain.Post;
-import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Set;
 
 public class PostResponseConverter {
     private PostResponseConverter() {
         throw new IllegalStateException("Util Class");
     }
 
-    public static PostResponseDTO.GetPostDetail toGetPostDetailDto(Post post, String content, List<String> tagNameList) {
+    public static PostResponseDTO.GetPostDetail toGetPostDetailDto(Post post, String content, Set<String> tagNameList) {
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
@@ -27,7 +27,7 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, List<String> tagNameList) {
+    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, Set<String> tagNameList) {
         return PostResponseDTO.GetPost.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
@@ -59,7 +59,7 @@ public class PostResponseConverter {
     /**
      * 임시저장 글
      */
-    public static PostResponseDTO.GetDraftDetail toGetDraftDetailDto(Post post, String content, List<String> tagNameList) {
+    public static PostResponseDTO.GetDraftDetail toGetDraftDetailDto(Post post, String content, Set<String> tagNameList) {
         return PostResponseDTO.GetDraftDetail.builder()
                 .draftPostId(post.getPostId())
                 .parentPostId(post.getParentPostId())
@@ -74,7 +74,7 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetDraft toGetDraftDto(Post post, String content, List<String> tagNameList) {
+    public static PostResponseDTO.GetDraft toGetDraftDto(Post post, String content, Set<String> tagNameList) {
         return PostResponseDTO.GetDraft.builder()
                 .draftPostId(post.getPostId())
                 .title(post.getTitle())

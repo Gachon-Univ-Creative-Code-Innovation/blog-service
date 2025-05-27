@@ -15,10 +15,8 @@ import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.post.repository.PostSearchRepository;
-import com.gucci.blog_service.tag.domain.Tag;
 import com.gucci.blog_service.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
-import org.elasticsearch.client.RequestOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,7 +48,7 @@ public class PostSearchService {
     private PostRepository postRepository;
 
     /** mongodb post -> elasticsearch에 인덱싱 */
-    public void index(Post post, PostDocument postDocument, List<String> tags) {
+    public void index(Post post, PostDocument postDocument, Set<String> tags) {
         //LocalDateTime -> OffsetDateTime 변환
         //OffsetDateTime odt = post.getCreatedAt().atOffset(ZoneOffset.UTC);
 
@@ -70,7 +66,7 @@ public class PostSearchService {
     }
 
     /** 게시글 업데이트 시 반영 */
-    public void update(Post post, PostDocument postDocument, List<String> tags) {
+    public void update(Post post, PostDocument postDocument, Set<String> tags) {
         //같은 id를 가지면 업데이트 됨
         index(post, postDocument, tags);
     }
@@ -181,7 +177,7 @@ public class PostSearchService {
             dtoList = searchPosts.stream().map(sp -> {
                         Long id = Long.parseLong(sp.getPostId(), 16);
                         Post post = postMap.get(id);
-                        List<String> tagNameList = tagService.getTagNamesByPost(post);
+                        Set<String> tagNameList = tagService.getTagNamesByPost(post);
                         String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                         return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                     })

@@ -1,14 +1,15 @@
 package com.gucci.blog_service.post.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.*;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -29,7 +30,7 @@ public class PostSearch {
     private String author;
 
     @Field(type = FieldType.Keyword)
-    private List<String> tags;
+    private Set<String> tags;
 
     @Field(type = FieldType.Text, analyzer = "korean")
     private String content;

@@ -29,7 +29,7 @@ public class PostRequestDTO {
         @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
 
-        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.", example = "1")
         Long categoryCode;
     }
 
@@ -49,7 +49,7 @@ public class PostRequestDTO {
         @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
 
-        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.", example = "1")
         Long categoryCode;
     }
 
@@ -75,7 +75,7 @@ public class PostRequestDTO {
         @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
 
-        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.")
+        @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.", example = "1")
         Long categoryCode;
     }
 

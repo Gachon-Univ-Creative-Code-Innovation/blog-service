@@ -3,7 +3,6 @@ package com.gucci.blog_service.tag.domain;
 import com.gucci.blog_service.config.common.BaseEntity;
 import com.gucci.blog_service.post.domain.Post;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.gucci.blog_service.post.service;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.service.CategoryService;
-import com.gucci.blog_service.client.user.api.UserServiceApi;
-import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
+import com.gucci.blog_service.client.matching.client.MatchingServiceClient;
+import com.gucci.blog_service.client.user.client.UserServiceClient;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.global.HtmlImageHelper;
 import com.gucci.blog_service.global.JwtTokenHelper;
@@ -19,14 +19,11 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -44,13 +41,15 @@ public class PostService {
     private final CategoryService categoryService;
     private final PostSearchService postSearchService;
 
-    private final UserServiceApi userServiceApi;
+    private final UserServiceClient userServiceClient;
+    private final MatchingServiceClient matchingServiceClient;
 
     private final JwtTokenHelper jwtTokenHelper;
 
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
+    private final static Integer pageSize = 10;
 
     /**
      * 게시글
@@ -61,7 +60,7 @@ public class PostService {
     public Post createPost(String token, PostRequestDTO.CreatePost dto) {
         Post savedPost;
         PostDocument savedPostDocument;
-        List<String> savedTags;
+        Set<String> savedTags;
 
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
         String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
@@ -129,12 +128,13 @@ public class PostService {
     }
 
     /** 게시글 하나 상세조회  */
+    @Transactional
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
         Post post = postRepository.findById(postId).
                 orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST));
         PostDocument postDocument = postDocRepository.findById(post.getDocumentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
@@ -149,12 +149,11 @@ public class PostService {
     /** 팔로잉하는 사용자 글 조회 */
     public PostResponseDTO.GetPostList getFollowingPostList(String token, int page) {
         //user-service에서 following 목록 가져오기
-        UserServiceResponseDTO.UserFollowingIds followingUserIds = userServiceApi.getUserFollowingId(token);
+        List<Long> followingUserIds = userServiceClient.getUserFollowingIds(token);
 
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
 
-        Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds.getUserIdList(), pageable);
+        Page<Post> postPage = postRepository.findAllByPostIdIn(followingUserIds, pageable);
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
@@ -170,7 +169,7 @@ public class PostService {
                     if (postDocument == null) {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
@@ -183,7 +182,6 @@ public class PostService {
 
     /** 전체 글 조회 */
     public PostResponseDTO.GetPostList getPostAll(Integer page) {
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByIsDraft(false, pageable);
 
@@ -201,7 +199,7 @@ public class PostService {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                         }
@@ -215,7 +213,6 @@ public class PostService {
     public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
-        int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByCategoryAndIsDraft(category, false, pageable);
 
@@ -233,7 +230,7 @@ public class PostService {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
@@ -245,8 +242,8 @@ public class PostService {
 
     /** 인기글 조회 */
     public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
-        int pageSize = 10;
-        Page<Post> postPage = postRepository.findAllTrending(PageRequest.of(page, pageSize)); //조회수 100이상 글, 최신순으로 가져옴
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        Page<Post> postPage = postRepository.findAllTrending(weekAgo, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
@@ -263,7 +260,7 @@ public class PostService {
                         throw new CustomException(ErrorCode.NOT_FOUND_POST);
                     }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    List<String> tagNameList = tagService.getTagNamesByPost(post);
+                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
                 }
@@ -271,6 +268,71 @@ public class PostService {
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
 
+    }
+
+    /** 추천글 조회 - 사용자 태그 기반으로 글 추천 */
+    public PostResponseDTO.GetPostList getRecommendPostList(String token, Integer page) {
+        Page<Post> postPage;
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        // 사용자 정보 조회
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        // 사용자 태그 가져오기
+        List<String> tags = matchingServiceClient.getUserRepresentTags(token, userId);
+        Set<String> userTags = Set.copyOf(tags);
+
+        // 태그가 없는 경우 최신 글 추천
+        if (userTags.isEmpty()) {
+            postPage = postRepository.findAll(PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending()
+            ));
+        }
+        else {
+            // 사용자 태그와 일치하는 글 찾기 (태그 개수에 따라 점수 부여)
+            Map<Post, Double> postScores = new HashMap<>();
+
+            // 각 태그에 해당하는 글 조회 - 본인이 작성한 글은 제외
+            for (String tag : userTags) {
+                List<Post> postsWithTag = postRepository.findByTagsContaining(tag, userId
+                );
+
+                for (Post post : postsWithTag) {
+                    // 태그 일치 점수 계산
+                    Set<String> tagNames = tagService.getTagNamesByPost(post);
+                    double tagMatchCount = calculateTagSimilarity(tagNames, userTags);
+
+                    // 기존 점수에 추가
+                    postScores.put(post, postScores.getOrDefault(post, 0.0) + tagMatchCount);
+                }
+            }
+
+            // 점수 내림차순으로 정렬
+            List<Post> sortedPost = postScores.entrySet().stream()
+                    .sorted(Map.Entry.<Post, Double>comparingByValue().reversed())
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            //page 만들기
+            int total = sortedPost.size();
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), total);
+            List<Post> content = start <= end ? sortedPost.subList(start, end) : List.of();
+            postPage = new PageImpl<>(content, pageable, total);
+        }
+
+        // dto 만들기
+        List<PostResponseDTO.GetPost> postRes = postPage.stream()
+                .map(
+                        post -> {
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        }
+                ).toList();
+
+        return PostResponseConverter.toGetPostList(postPage, postRes);
     }
 
     /** 게시글 수정 */
@@ -317,7 +379,7 @@ public class PostService {
 
         //tag 업데이트
         tagService.updateByTagNameList(post, dto.getTagNameList());
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
         Category category = categoryService.getCategory(dto.getCategoryCode());
 
@@ -476,7 +538,7 @@ public class PostService {
             throw new CustomException(ErrorCode.NO_PERMISSION);
         }
 
-        List<String> tagNameList = tagService.getTagNamesByPost(post);
+        Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
         //image url과 함께 반환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
@@ -502,7 +564,7 @@ public class PostService {
                             if (postDocument == null) {
                                 throw new CustomException(ErrorCode.NOT_FOUND_POST);
                             }
-                            List<String> tagNameList = tagService.getTagNamesByPost(post);
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
                             return PostResponseConverter.toGetDraftDto(post, postDocument.getContent(), tagNameList);
                         }
@@ -551,6 +613,23 @@ public class PostService {
 
         List<String> postSearchIds = postList.stream().map(post -> Long.toHexString(post.getPostId())).toList();
         postSearchService.updateUserNickname(postSearchIds, nickname);
+    }
+
+    /**
+     * 태그 유사도 계산 (Jaccard 유사도) : 유저 대표태그와 정확히 딱 맞을수록 점수 높음
+     */
+    private double calculateTagSimilarity(Set<String> postTags, Set<String> refTags) {
+        if (postTags == null || refTags == null || postTags.isEmpty() || refTags.isEmpty()) {
+            return 0.0;
+        }
+
+        Set<String> intersection = new HashSet<>(postTags);
+        intersection.retainAll(refTags);
+
+        Set<String> union = new HashSet<>(postTags);
+        union.addAll(refTags);
+
+        return (double) intersection.size() / union.size();
     }
 
 }

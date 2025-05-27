@@ -80,6 +80,17 @@ public class PostController {
         return ApiResponse.success(getPostList);
     }
 
+    @Operation(summary = "추천글 조회", description = "사용자의 대표 태그를 기준으로 추천글을 조회합니다. 관련도순으로 정렬됩니다")
+    @GetMapping("/recommend")
+    public ApiResponse<PostResponseDTO.GetPostList> getRecommendPostList(
+            HttpServletRequest request,
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
+    ){
+        String token = request.getHeader("Authorization");
+        PostResponseDTO.GetPostList getPostList = postService.getRecommendPostList(token, page);
+        return ApiResponse.success(getPostList);
+    }
+
     @Operation(summary = "게시글 수정", description = "게시글을 수정합니다. 작성한 본인만 수정가능합니다.")
     @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(

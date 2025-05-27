@@ -3,9 +3,7 @@ package com.gucci.blog_service.category.helper;
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.category.domain.type.CategoryType;
 import com.gucci.blog_service.category.repository.CategoryRepository;
-import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Comment;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

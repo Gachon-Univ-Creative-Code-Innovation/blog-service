@@ -4,7 +4,6 @@ package com.gucci.blog_service.comment.domain.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
-import org.hibernate.annotations.Comments;
 
 import java.time.LocalDateTime;
 import java.util.List;
