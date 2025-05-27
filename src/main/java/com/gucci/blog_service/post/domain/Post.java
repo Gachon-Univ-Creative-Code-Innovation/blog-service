@@ -2,6 +2,7 @@ package com.gucci.blog_service.post.domain;
 
 import com.gucci.blog_service.category.domain.Category;
 import com.gucci.blog_service.config.common.BaseEntity;
+import com.gucci.blog_service.post.domain.enums.PostType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +46,9 @@ public class Post extends BaseEntity { //todo: user연결하기
     @Column(columnDefinition = "boolean default false", nullable = false)
     private boolean isDraft = false;
 
+    @Enumerated(EnumType.STRING)
+    private PostType postType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -58,10 +62,11 @@ public class Post extends BaseEntity { //todo: user연결하기
         this.view = this.view + 1;
     }
 
-    public void update(String title, Category category, String thumbnail) {
+    public void update(String title, Category category, String thumbnail, PostType postType) {
         this.title = title;
         this.category = category;
         this.thumbnail = thumbnail;
+        this.postType = postType;
     }
     public void update(String title, Category category) {
         this.title = title;
