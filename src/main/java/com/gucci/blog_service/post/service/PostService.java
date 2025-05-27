@@ -218,7 +218,7 @@ public class PostService {
         Category category = categoryService.getCategory(categoryId);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-        Page<Post> postPage = postRepository.findAllByCategoryAndIsDraft(category, false, pageable);
+        Page<Post> postPage = postRepository.findAllByCategoryAndIsDraftAndPostType(category, false, PostType.POST, pageable);
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
@@ -247,7 +247,7 @@ public class PostService {
     /** 인기글 조회 */
     public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
-        Page<Post> postPage = postRepository.findAllTrending(weekAgo, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
+        Page<Post> postPage = postRepository.findAllTrending(weekAgo, PostType.POST, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
 
         //doc 조회
         List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
@@ -288,7 +288,7 @@ public class PostService {
 
         // 태그가 없는 경우 최신 글 추천
         if (userTags.isEmpty()) {
-            postPage = postRepository.findAll(PageRequest.of(
+            postPage = postRepository.findAllByPostType(PostType.POST, PageRequest.of(
                     pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending()
             ));
         }
@@ -298,8 +298,7 @@ public class PostService {
 
             // 각 태그에 해당하는 글 조회 - 본인이 작성한 글은 제외
             for (String tag : userTags) {
-                List<Post> postsWithTag = postRepository.findByTagsContaining(tag, userId
-                );
+                List<Post> postsWithTag = postRepository.findByTagsContaining(tag, PostType.POST, userId);
 
                 for (Post post : postsWithTag) {
                     // 태그 일치 점수 계산
