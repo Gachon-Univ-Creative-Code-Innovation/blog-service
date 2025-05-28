@@ -21,7 +21,7 @@ public class PostController {
     /**
      * 블로그 글
      */
-    @Operation(summary = "게시글 생성", description = "게시글을 생성합니다.")
+    @Operation(summary = "게시글 생성", description = "게시글을 생성합니다. 게시글 타입은 POST, MATCHING 입니다. 임시저장 글로 생성할 경우 draftPostId 를 입력. 아니면 null. 임시저장글의 부모 post가 있을경우 parentPostId 입력. 아니면 null")
     @PostMapping("")
     public ApiResponse<String> createPost(
             HttpServletRequest request,
@@ -55,9 +55,10 @@ public class PostController {
     @Operation(summary = "전체 글 조회", description = "전체 글 목록을 조회합니다")
     @GetMapping("/all")
     public ApiResponse<PostResponseDTO.GetPostList> getAllPostList(
+            @Schema(description = "조회할 글의 종류 POST, MATCHING") @RequestParam String postType,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
-        PostResponseDTO.GetPostList getPostList = postService.getPostAll(page);
+        PostResponseDTO.GetPostList getPostList = postService.getPostAll(postType, page);
         return ApiResponse.success(getPostList);
     }
 
@@ -120,7 +121,8 @@ public class PostController {
     /**
      * 임시저장 글
      */
-    @Operation(summary = "임시저장", description = "임시저장합니다.")
+    @Operation(summary = "임시저장", description = "draftPostId : 임시저장 글 수정 시 임시저장 글 아이디를 입력, 이외 null.   " +
+            "parentPostId : 발행된 글에 대한 임시저장일 경우 발행된 글 아이디를 입력, 이외 null")
     @PostMapping("/drafts")
     public ApiResponse<String> createDraft(
             HttpServletRequest request,

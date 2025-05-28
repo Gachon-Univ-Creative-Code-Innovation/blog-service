@@ -58,5 +58,6 @@ public class Comment extends BaseEntity { //todo: user연결하기
         this.isDeleted = true;
         this.content = "삭제된 댓글입니다.";
         this.userId = null;
+        this.userNickName = null;
     }
 }

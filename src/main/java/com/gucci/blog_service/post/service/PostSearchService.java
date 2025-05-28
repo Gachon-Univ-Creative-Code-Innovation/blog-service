@@ -13,6 +13,7 @@ import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
 import com.gucci.blog_service.post.domain.PostSearch;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
+import com.gucci.blog_service.post.domain.enums.PostType;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.post.repository.PostSearchRepository;
 import com.gucci.blog_service.tag.service.TagService;
@@ -60,6 +61,7 @@ public class PostSearchService {
                 .content(postDocument.getContent())
                 .createdAt(post.getCreatedAt())
                 .viewCount(post.getView())
+                .postType(post.getPostType())
                 .build();
 
         postSearchRepository.save(postSearch);
@@ -125,7 +127,7 @@ public class PostSearchService {
     }
 
 
-    public PostResponseDTO.GetPostList search(String keyword, Integer sortBy, Integer page) {
+    public PostResponseDTO.GetPostList search(String keyword, PostType postType, Integer sortBy, Integer page) {
         // init
         int size = 10;
         Pageable pageable = PageRequest.of(page, size);
@@ -134,7 +136,7 @@ public class PostSearchService {
 
 
         try{
-            Query query = buildSearchQuery(keyword);
+            Query query = buildSearchQuery(keyword, postType);
             SearchRequest.Builder builder = new SearchRequest.Builder()
                     .index("post")                 // 2. 검색 대상 Elasticsearch 인덱스명을 지정 ("post" 인덱스)
                     .query(query)                        // 3. 실제 검색 쿼리(Query)를 설정
@@ -177,9 +179,14 @@ public class PostSearchService {
             dtoList = searchPosts.stream().map(sp -> {
                         Long id = Long.parseLong(sp.getPostId(), 16);
                         Post post = postMap.get(id);
-                        Set<String> tagNameList = tagService.getTagNamesByPost(post);
-                        String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                        return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        if (post == null) {
+                            return null;
+                        }
+                        else {
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        }
                     })
                     .toList();
 
@@ -198,11 +205,20 @@ public class PostSearchService {
         postSearchRepository.deleteById(Long.toHexString(postId));
     }
 
-    private Query buildSearchQuery(String keyword) {
-        BoolQuery.Builder boolQuery = new BoolQuery.Builder();
-        boolQuery.should(MatchQuery.of(m -> m.field("title").query(keyword))._toQuery());
-        boolQuery.should(MatchQuery.of(m -> m.field("content").query(keyword))._toQuery());
+    private Query buildSearchQuery(String keyword, PostType postType) {
+        return Query.of(q -> q.bool(b ->
+                b.should(s ->
+                        s.multiMatch(mm ->
+                                mm.fields("title", "content")
+                                        .query(keyword)
+                        ))
+                        .minimumShouldMatch("1")
+                        .filter(f ->
+                                f.term(t->
+                                        t.field("postType")
+                                                .value(postType.name())
+                                ))
+        ));
 
-        return boolQuery.build()._toQuery();
     }
 }

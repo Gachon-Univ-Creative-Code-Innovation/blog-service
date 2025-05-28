@@ -1,6 +1,7 @@
 package com.gucci.blog_service.post.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.gucci.blog_service.post.domain.enums.PostType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -37,6 +38,9 @@ public class PostSearch {
 
     @Field(type = FieldType.Long)
     private Long viewCount;
+
+    @Field(type = FieldType.Keyword)
+    private PostType postType;
 
 //    @Field(type = FieldType.Date, format = DateFormat.date_time)
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")

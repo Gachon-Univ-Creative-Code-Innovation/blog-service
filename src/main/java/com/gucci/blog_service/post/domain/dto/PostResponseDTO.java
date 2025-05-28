@@ -21,6 +21,7 @@ public class PostResponseDTO {
         Long view;
         Set<String> tagNameList;
         Long categoryCode;
+        String postType;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
     }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
         name = "user-service-client",
-        url = "${feign.user-service.url}/api/user-service",
+        url = "${feign.user-service.url}",
         configuration = UserServiceFeignConfig.class
 )
 public interface UserServiceAPI {
