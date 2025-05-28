@@ -68,9 +68,9 @@ public class PostService {
         String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
 
         //임시저장 글이었을 경우
-        if (dto.getPostId() != null) {
+        if (dto.getDraftPostId() != null && dto.getParentPostId() == null) {
 
-            Post post = postQueryService.getPost(dto.getPostId());
+            Post post = postQueryService.getPost(dto.getDraftPostId());
             PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
 
             //태그 업데이트
@@ -90,8 +90,31 @@ public class PostService {
             post.update(dto.getTitle(), category, thumbnail);
             post.publish();
             savedPost = postRepository.save(post);
-        }
-        else {
+        }  //임시저장글의 원글이 있을경우
+        else if (dto.getDraftPostId() != null && dto.getParentPostId() != null) {
+            Post post = postQueryService.getPost(dto.getParentPostId());
+            PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
+
+            //임시저장 글 삭제
+            deleteDraftIfExist(dto.getParentPostId());
+
+            //img src objectKey 정제
+            String processedContent = htmlImageHelper.extractObjectKeysFromPresignedUrls(dto.getContent());
+
+            //Doc 업데이트
+            postDocument.updateContent(processedContent);
+            savedPostDocument = postDocRepository.save(postDocument); // 도큐먼트를 추적해서 변경된 필드를 저장하는 구조가 아니기 때문에, 반드시 save()를 직접 호출해야 반영
+
+            //tag 업데이트
+            savedTags = tagService.updateByTagNameList(post, dto.getTagNameList());
+
+            Category category = categoryService.getCategory(dto.getCategoryCode());
+
+            //Post 업데이트
+            String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
+            post.update(dto.getTitle(), category, thumbnail);
+            savedPost = postRepository.save(post);
+        } else {
 
             // 새로 작성한 글인 경우
             Category category = categoryService.getCategory(dto.getCategoryCode());
@@ -404,20 +427,7 @@ public class PostService {
         }
 
         //임시저장 글 삭제
-        Post draft = postRepository.findByParentPostId(postId).orElse(null);
-        if (draft != null) {
-            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId());
-
-            //s3에서 사진 삭제
-            List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDoc.getContent());
-            objectKeys.forEach(s3Service::deleteFile);
-
-            //태그, Doc, Post 삭제
-
-            tagService.deleteAllByPost(draft);
-            postRepository.delete(draft);
-            postDocRepository.delete(draftDoc);
-        }
+        deleteDraftIfExist(postId);
 
         //s3에서 사진 삭제
         List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(postDocument.getContent());
@@ -626,4 +636,20 @@ public class PostService {
         return (double) intersection.size() / union.size();
     }
 
+    private void deleteDraftIfExist (Long parentPostId) {
+        Post draft = postRepository.findByParentPostId(parentPostId).orElse(null);
+        if (draft != null) {
+            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId());
+
+            //s3에서 사진 삭제
+            List<String> objectKeys = htmlImageHelper.extractObjectKeysFromSavedContent(draftDoc.getContent());
+            objectKeys.forEach(s3Service::deleteFile);
+
+            //태그, Doc, Post 삭제
+
+            tagService.deleteAllByPost(draft);
+            postRepository.delete(draft);
+            postDocRepository.delete(draftDoc);
+        }
+    }
 }

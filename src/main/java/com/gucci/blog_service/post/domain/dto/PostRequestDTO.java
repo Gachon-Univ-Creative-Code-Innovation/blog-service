@@ -16,8 +16,11 @@ public class PostRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CreatePost {
-        @Schema(description = "임시저장 글로 생성할 경우 draftpostId 를 입력. 아니면 null 입력", example = "0")
-        Long postId;
+        @Schema(description = "임시저장 글의 부모 post가 있을경우 입력. 아니면 null 입력", example = "null")
+        Long parentPostId;
+
+        @Schema(description = "임시저장 글로 생성할 경우 draftPostId 를 입력. 아니면 null 입력", example = "null")
+        Long draftPostId;
 
         @Schema(description = "글 제목은 필수입니다", example = "글 제목")
         @NotBlank(message = "제목은 필수입니다.")
@@ -64,10 +67,10 @@ public class PostRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CreateDraft {
-        @Schema(description = "임시저장 글 수정 시 임시저장 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.")
+        @Schema(description = "임시저장 글 수정 시 임시저장 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.", example = "null")
         Long draftPostId;
 
-        @Schema(description = "발행된 글에 대한 임시저장일 경우 발행된 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.")
+        @Schema(description = "발행된 글에 대한 임시저장일 경우 발행된 글 아이디를 입력합니다. 이외의 경우 null을 입력합니다.", example = "null")
         Long parentPostId;
 
         @Schema(description = "제목은 필수입니다", example = "임시저장 글 제목")

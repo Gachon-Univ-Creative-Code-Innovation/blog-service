@@ -179,9 +179,14 @@ public class PostSearchService {
             dtoList = searchPosts.stream().map(sp -> {
                         Long id = Long.parseLong(sp.getPostId(), 16);
                         Post post = postMap.get(id);
-                        Set<String> tagNameList = tagService.getTagNamesByPost(post);
-                        String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                        return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        if (post == null) {
+                            return null;
+                        }
+                        else {
+                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                        }
                     })
                     .toList();
 
