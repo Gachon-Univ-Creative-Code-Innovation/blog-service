@@ -17,8 +17,8 @@ public interface UserServiceAPI {
             @RequestHeader("Authorization") String token
     );
 
-    @GetMapping(value = "/user/patch")
-    UserServiceResponseDTO.UserProfile getUserProfile(
+    @GetMapping(value = "/user/main")
+    UserServiceResponseDTO.UserProfileDto getUserProfile(
             @RequestHeader("Authorization") String token
     );
 }

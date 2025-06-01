@@ -24,11 +24,14 @@ public class UserServiceClient {
     }
 
     public UserProfile getUserProfile(String token, Long userId) {
-        UserServiceResponseDTO.UserProfile res = userServiceAPI.getUserProfile(token);
+        logger.debug("debug 시작");
+
+        UserServiceResponseDTO.UserProfileDto res = userServiceAPI.getUserProfile(token);
+        logger.debug("debug "+res.getUserProfile().getNickname());
         return UserProfile.builder()
                 .userId(userId)
-                .nickname(res.getNickname())
-                .profileUrl(res.getProfileUrl())
+                .nickname(res.getUserProfile().getNickname())
+                .profileUrl(res.getUserProfile().getProfileUrl())
                 .build();
     }
 }

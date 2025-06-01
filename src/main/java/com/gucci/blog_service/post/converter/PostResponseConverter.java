@@ -2,6 +2,7 @@ package com.gucci.blog_service.post.converter;
 
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.dto.PostResponseDTO;
+import com.gucci.blog_service.userProfileCache.domain.UserProfile;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -12,11 +13,12 @@ public class PostResponseConverter {
         throw new IllegalStateException("Util Class");
     }
 
-    public static PostResponseDTO.GetPostDetail toGetPostDetailDto(Post post, String content, Set<String> tagNameList) {
+    public static PostResponseDTO.GetPostDetail toGetPostDetailDto(Post post, UserProfile userProfile, String content, Set<String> tagNameList) {
         return PostResponseDTO.GetPostDetail.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
-                .authorNickname(post.getUserNickName())
+                .authorNickname(userProfile.getNickname())
+                .profileUrl(userProfile.getProfileUrl())
                 .view(post.getView())
                 .title(post.getTitle())
                 .content(content)
@@ -42,6 +44,23 @@ public class PostResponseConverter {
                 .updatedAt(post.getUpdatedAt())
                 .build();
     }
+
+    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, UserProfile userProfile) {
+        return PostResponseDTO.GetPost.builder()
+                .postId(post.getPostId())
+                .authorId(post.getUserId())
+                .authorNickname(userProfile.getNickname())
+                .profileUrl(userProfile.getProfileUrl())
+                .title(post.getTitle())
+                .thumbnail(thumbnail)
+                .view(post.getView())
+                .categoryCode(post.getCategory().getCategoryId())
+                .summary(post.getSummary())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
 
     public static PostResponseDTO.GetPostList toGetPostList(Page<?> postPage, List<PostResponseDTO.GetPost> posts) {
         return PostResponseDTO.GetPostList.builder()

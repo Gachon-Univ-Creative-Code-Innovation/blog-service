@@ -16,6 +16,7 @@ public class PostResponseDTO {
         Long postId;
         Long authorId;
         String authorNickname;
+        String profileUrl;
         String title;
         String content;
         Long view;
@@ -32,6 +33,7 @@ public class PostResponseDTO {
         Long postId;
         Long authorId;
         String authorNickname;
+        String profileUrl;
         String title;
         String summary;
         String thumbnail;

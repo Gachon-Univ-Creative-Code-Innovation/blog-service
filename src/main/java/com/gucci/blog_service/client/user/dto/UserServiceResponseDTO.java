@@ -16,14 +16,20 @@ public class UserServiceResponseDTO {
         List<Long> userIdList;
     }
 
+
+    @Getter
+    @Setter
+    public static class UserProfileDto {
+        String status;
+        String message;
+        @JsonProperty("data")
+        UserProfile userProfile;
+    }
+
     @Getter
     @Setter
     public static class UserProfile {
-        String email;
-        String name;
         String nickname;
         String profileUrl;
-        String githubUrl;
-        String socialLogin;
     }
 }

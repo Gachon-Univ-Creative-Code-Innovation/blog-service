@@ -78,10 +78,12 @@ public class PostController {
     @Operation(summary = "전체 글 조회", description = "전체 글 목록을 조회합니다")
     @GetMapping("/all")
     public ApiResponse<PostResponseDTO.GetPostList> getAllPostList(
+            HttpServletRequest request,
             @Schema(description = "조회할 글의 종류 POST, MATCHING") @RequestParam String postType,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
-        PostResponseDTO.GetPostList getPostList = postService.getPostAll(postType, page);
+        String token = request.getHeader("Authorization");
+        PostResponseDTO.GetPostList getPostList = postService.getPostAll(token, postType, page);
         return ApiResponse.success(getPostList);
     }
 

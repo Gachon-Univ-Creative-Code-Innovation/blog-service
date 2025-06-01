@@ -10,6 +10,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
+import java.time.Duration;
+
 @Configuration
 @EnableCaching
 public class RedisConfig {
@@ -22,6 +24,7 @@ public class RedisConfig {
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         // 기본 캐시 구성: TTL 10분, 값은 JSON 직렬화(Gson/Jackson)
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(10))
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
                                 .fromSerializer(new GenericJackson2JsonRedisSerializer())
