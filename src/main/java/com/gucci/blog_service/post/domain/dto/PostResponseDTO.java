@@ -34,6 +34,7 @@ public class PostResponseDTO {
         Long authorId;
         String authorNickname;
         String profileUrl;
+        Integer commentCount;
         String title;
         String summary;
         String thumbnail;

@@ -159,7 +159,7 @@ public class PostServiceTest {
         Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         Mockito.when(postDocRepository.findById(postDoc.getId())).thenReturn(Optional.of(postDoc));
 
-        PostResponseDTO.GetPostDetail result = postService.getPostDetail(postId);
+        PostResponseDTO.GetPostDetail result = postService.getPostDetail(token, postId);
 
         assertThat(result.getPostId()).isEqualTo(post.getPostId());
         assertThat(result.getAuthorId()).isEqualTo(post.getUserId());

@@ -76,7 +76,7 @@ public class PostControllerTest {
                 .postId(postId)
                 .build();
 
-        Mockito.when(postService.getPostDetail(anyLong())).thenReturn(dto);
+        Mockito.when(postService.getPostDetail(anyString(), anyLong())).thenReturn(dto);
 
         mockMvc.perform(get("/api/blog-service/posts/{postId}", postId))
                 .andExpect(status().isOk())

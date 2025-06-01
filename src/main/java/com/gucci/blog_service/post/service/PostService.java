@@ -164,8 +164,9 @@ public class PostService {
         return postList.stream().map(
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
     }
@@ -178,8 +179,9 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
     }
@@ -217,8 +219,9 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -243,8 +246,9 @@ public class PostService {
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                             UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                 ).toList();
 
@@ -265,8 +269,9 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -285,8 +290,9 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -350,8 +356,9 @@ public class PostService {
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                             UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                 ).toList();
 

@@ -30,27 +30,14 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail) {
-        return PostResponseDTO.GetPost.builder()
-                .postId(post.getPostId())
-                .authorId(post.getUserId())
-                .authorNickname(post.getUserNickName())
-                .title(post.getTitle())
-                .thumbnail(thumbnail)
-                .view(post.getView())
-                .categoryCode(post.getCategory().getCategoryId())
-                .summary(post.getSummary())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
-    }
 
-    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, UserProfile userProfile) {
+    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, UserProfile userProfile, Integer commentCount) {
         return PostResponseDTO.GetPost.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
                 .authorNickname(userProfile.getNickname())
                 .profileUrl(userProfile.getProfileUrl())
+                .commentCount(commentCount)
                 .title(post.getTitle())
                 .thumbnail(thumbnail)
                 .view(post.getView())
