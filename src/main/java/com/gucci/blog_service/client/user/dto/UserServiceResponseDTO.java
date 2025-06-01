@@ -15,4 +15,15 @@ public class UserServiceResponseDTO {
         @JsonProperty("data")
         List<Long> userIdList;
     }
+
+    @Getter
+    @Setter
+    public static class UserProfile {
+        String email;
+        String name;
+        String nickname;
+        String profileUrl;
+        String githubUrl;
+        String socialLogin;
+    }
 }
