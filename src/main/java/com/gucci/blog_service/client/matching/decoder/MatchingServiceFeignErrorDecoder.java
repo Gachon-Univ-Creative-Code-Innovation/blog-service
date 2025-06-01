@@ -8,6 +8,10 @@ import feign.codec.ErrorDecoder;
 public class MatchingServiceFeignErrorDecoder implements ErrorDecoder {
     @Override
     public Exception decode(String methodKey, Response response) {
+        System.out.println("error "+response);
+        System.out.println("error "+response.reason());
+        System.out.println("error "+response.request());
+
         // 4xx / 5xx 모두 CustomException으로 래핑
         if (response.status() >= 400 && response.status() < 600) {
             return new CustomException(ErrorCode.FAIL);
