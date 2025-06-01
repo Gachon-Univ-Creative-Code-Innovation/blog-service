@@ -161,7 +161,7 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, null);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail);
                 }
         ).toList();
     }
@@ -174,7 +174,7 @@ public class PostService {
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, null);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail);
                 }
         ).toList();
     }
@@ -204,24 +204,14 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByPostTypeAndPostIdIn(PostType.POST, followingUserIds, pageable);
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail);
                 }
         ).toList();
 
@@ -240,23 +230,13 @@ public class PostService {
             postPage = postRepository.findAllByIsDraftAndPostType(false, PostType.MATCHING, pageable);
         }
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                         post -> {
-                            PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                            if (postDocument == null) {
-                                throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                            }
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail);
                         }
                 ).toList();
 
@@ -271,23 +251,13 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByCategoryAndIsDraftAndPostType(category, false, PostType.POST, pageable);
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail);
                 }
         ).toList();
 
@@ -300,24 +270,13 @@ public class PostService {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         Page<Post> postPage = postRepository.findAllTrending(weekAgo, PostType.POST, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
-
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail);
                 }
         ).toList();
 
@@ -380,9 +339,8 @@ public class PostService {
                 .map(
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail);
                         }
                 ).toList();
 

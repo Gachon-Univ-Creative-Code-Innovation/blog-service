@@ -183,9 +183,8 @@ public class PostSearchService {
                             return null;
                         }
                         else {
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail);
                         }
                     })
                     .toList();

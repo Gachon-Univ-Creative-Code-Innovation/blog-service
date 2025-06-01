@@ -36,7 +36,6 @@ public class PostResponseDTO {
         String summary;
         String thumbnail;
         Long view;
-        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;

@@ -45,6 +45,7 @@ public class PostController {
         return ApiResponse.success(getPostList);
     }
 
+    /** 페이징 적용 안함 */
     @Operation(summary = "사용자 글 조회", description = "다른 사용자가 작성한 글을 조회합니다")
     @GetMapping("/user/{userId}")
     public ApiResponse<List<PostResponseDTO.GetPost>> getUserPosts(

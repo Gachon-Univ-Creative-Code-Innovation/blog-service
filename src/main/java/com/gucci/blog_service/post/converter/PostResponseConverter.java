@@ -28,7 +28,7 @@ public class PostResponseConverter {
                 .build();
     }
 
-    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail, Set<String> tagNameList) {
+    public static PostResponseDTO.GetPost toGetPostDto(Post post, String thumbnail) {
         return PostResponseDTO.GetPost.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUserId())
@@ -38,7 +38,6 @@ public class PostResponseConverter {
                 .view(post.getView())
                 .categoryCode(post.getCategory().getCategoryId())
                 .summary(post.getSummary())
-                .tagNameList(tagNameList)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
