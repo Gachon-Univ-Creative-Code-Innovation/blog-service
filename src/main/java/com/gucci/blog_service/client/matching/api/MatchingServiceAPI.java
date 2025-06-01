@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "matching-service",
-        url = "${feign.matching-service.url}/api/matching-service",
+        url = "${feign.matching-service.url}",
         configuration = MatchingServiceFeignConfig.class
 )
 public interface MatchingServiceAPI {

@@ -37,9 +37,9 @@ aws:
 
 feign:
   user-service:
-    url : ${USER_SERVICE_URL} #todo : 실제 url 로 바꾸기
+    url : "http://localhost:8081" #${USER_SERVICE_URL} #todo : 실제 url 로 바꾸기
   matching-service:
-    url : ${MATCHING_SERVICE_URL} #todo : 실제 url 로 바꾸기
+    url : "http://localhost:8002" #todo : 실제 url 로 바꾸기
 
 springdoc:
   swagger-ui:
