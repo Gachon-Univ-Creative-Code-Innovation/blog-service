@@ -38,6 +38,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:v1.0.2'
 
+
 	//elastic search
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -57,6 +58,8 @@ dependencies {
 
 	//img tag parsing
 	implementation 'org.jsoup:jsoup:1.17.2'
+
+	implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
 }
 
