@@ -18,6 +18,7 @@ public class CommentResponseDTO {
         Long parentCommentId;
         Long authorId;
         String authorNickname;
+        String authorProfileUrl;
         String content;
         @Schema(description = "댓글의 계층입니다. root 댓글부터 0,1,2...로 증가합니다.")
         Integer depth;
