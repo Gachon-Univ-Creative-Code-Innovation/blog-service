@@ -151,6 +151,21 @@ public class PostService {
         return savedPost;
     }
 
+    /** 본인 글 조회 paging 적용 안함*/
+    public List<PostResponseDTO.GetPost> getMyPostList(String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        List<Post> postList = postRepository.findAllByUserId(userId);
+
+        return postList.stream().map(
+                post -> {
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, null);
+                }
+        ).toList();
+    }
+
     /** 게시글 하나 상세조회  */
     @Transactional
     public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {

@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/blog-service/posts")
@@ -30,6 +32,17 @@ public class PostController {
         String token = request.getHeader("Authorization");
         Post newPost = postService.createPost(token, post);
         return ApiResponse.success(newPost.getPostId() + " 글이 정상적으로 생성되었습니다.");
+    }
+
+    /** 페이징 적용 안함 */
+    @Operation(summary = "사용자 글 조회", description = "본인이 작성한 글을 조회합니다.")
+    @GetMapping()
+    public ApiResponse<List<PostResponseDTO.GetPost>> getMyPosts(
+            HttpServletRequest request
+    ){
+        String token = request.getHeader("Authorization");
+        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(token);
+        return ApiResponse.success(getPostList);
     }
 
     @Operation(summary = "게시글 한 개 조회", description = "게시글 한 개를 상세 조회합니다.")
