@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver  # (optional, 대부분 auto detect 되지만 명시해도 좋음)
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # create, update, none 등 상황에 따라
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true  # SQL 로그 보기 좋게 포맷
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      host: mongo
+      port: 27017
+      authentication-database: admin
+      database: alog
+      username: gucci
+      password: password
+    elasticsearch:
+      uris: http://elasticsearch:9200
+      repositories:
+        enabled: true
+      connection-timeout: 5s
+      socket-timeout: 3s
+
+aws:
+  s3:
+    bucket: ${S3_BUCKET_NAME} # todo : 임시
+    region: ${S3_REGION}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+
+feign:
+  user-service:
+    url : "http://user-service:8080" #${USER_SERVICE_URL}
+  matching-service:
+    url : "http://matching-service:8000"
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+
+jwt:
+  secret: ${JWT_SECRET}
