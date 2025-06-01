@@ -1,5 +1,7 @@
 package com.gucci.blog_service.global;
 
+import com.gucci.common.exception.CustomException;
+import com.gucci.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -26,11 +28,15 @@ public class JwtTokenHelper {
     }
 
     public Claims extractClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
+        }
     }
 
     private String getJwtToken(String token) {

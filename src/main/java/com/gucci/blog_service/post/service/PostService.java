@@ -516,7 +516,7 @@ public class PostService {
         // 임시저장 글을 또 임시저장
         else {
             Post draft = postQueryService.getPost(dto.getDraftPostId());
-            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId()); // todo : NOT_FOUND_POST_CONTENT
+            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId());
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
 
