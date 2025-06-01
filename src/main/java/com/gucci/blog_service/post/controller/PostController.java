@@ -35,13 +35,22 @@ public class PostController {
     }
 
     /** 페이징 적용 안함 */
-    @Operation(summary = "사용자 글 조회", description = "본인이 작성한 글을 조회합니다.")
+    @Operation(summary = "내 글 조회", description = "본인이 작성한 글을 조회합니다.")
     @GetMapping()
     public ApiResponse<List<PostResponseDTO.GetPost>> getMyPosts(
             HttpServletRequest request
     ){
         String token = request.getHeader("Authorization");
         List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(token);
+        return ApiResponse.success(getPostList);
+    }
+
+    @Operation(summary = "사용자 글 조회", description = "다른 사용자가 작성한 글을 조회합니다")
+    @GetMapping("/user/{userId}")
+    public ApiResponse<List<PostResponseDTO.GetPost>> getUserPosts(
+            @Schema(description = "조회할 사용자의 userId", example = "0") @PathVariable Long userId
+    ) {
+        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(userId);
         return ApiResponse.success(getPostList);
     }
 
