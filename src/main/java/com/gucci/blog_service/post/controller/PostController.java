@@ -49,18 +49,22 @@ public class PostController {
     @Operation(summary = "사용자 글 조회", description = "다른 사용자가 작성한 글을 조회합니다")
     @GetMapping("/user/{userId}")
     public ApiResponse<List<PostResponseDTO.GetPost>> getUserPosts(
+            HttpServletRequest request,
             @Schema(description = "조회할 사용자의 userId", example = "0") @PathVariable Long userId
     ) {
-        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(userId);
+        String token = request.getHeader("Authorization");
+        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(token, userId);
         return ApiResponse.success(getPostList);
     }
 
     @Operation(summary = "게시글 한 개 조회", description = "게시글 한 개를 상세 조회합니다.")
     @GetMapping("/{postId}")
     public ApiResponse<PostResponseDTO.GetPostDetail> getPostDetail(
+            HttpServletRequest request,
             @Schema(description = "조회할 글의 postId", example = "0") @PathVariable Long postId
     ){
-        PostResponseDTO.GetPostDetail getPostDetail = postService.getPostDetail(postId);
+        String token = request.getHeader("Authorization");
+        PostResponseDTO.GetPostDetail getPostDetail = postService.getPostDetail(token, postId);
         return ApiResponse.success(getPostDetail);
     }
 
@@ -90,19 +94,23 @@ public class PostController {
     @Operation(summary = "카테고리 별 글 조회", description = "카테고리 별 글 리스트를 조회합니다. 최신순으로 정렬됩니다.")
     @GetMapping("/category/{categoryId}")
     public ApiResponse<PostResponseDTO.GetPostList> getPostListByCategory(
+            HttpServletRequest request,
             @Schema(description = "조회할 카테고리 id를 입력합니다.", example = "0") @PathVariable Long categoryId,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
-        PostResponseDTO.GetPostList getPostList = postService.getPostListByCategory(categoryId, page);
+        String token = request.getHeader("Authorization");
+        PostResponseDTO.GetPostList getPostList = postService.getPostListByCategory(token, categoryId, page);
         return ApiResponse.success(getPostList);
     }
 
     @Operation(summary = "인기글 조회", description = "인기글 리스트를 조회합니다. 최신순으로 정렬됩니다. 조회수를 기준으로 선정됩니다.")
     @GetMapping("/trending")
     public ApiResponse<PostResponseDTO.GetPostList> getTrendingPostList(
+            HttpServletRequest request,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ){
-        PostResponseDTO.GetPostList getPostList = postService.getTrendingPostList(page);
+        String token = request.getHeader("Authorization");
+        PostResponseDTO.GetPostList getPostList = postService.getTrendingPostList(token, page);
         return ApiResponse.success(getPostList);
     }
 
