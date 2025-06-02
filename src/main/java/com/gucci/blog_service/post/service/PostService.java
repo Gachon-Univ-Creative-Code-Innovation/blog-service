@@ -54,7 +54,7 @@ public class PostService {
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
-    private final static Integer pageSize = 10;
+    private final static Integer pageSize = 15;
 
     /**
      * 게시글
@@ -281,6 +281,29 @@ public class PostService {
 
         return PostResponseConverter.toGetPostList(postPage, postRes);
 
+    }
+
+
+    /** 매칭 : 카테고리별 글 조회 */
+    public PostResponseDTO.GetPostList getMatchingPostListByCategory(String token, Long categoryId, Integer page) {
+        Category category = categoryService.getCategory(categoryId);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postPage = postRepository.findAllByCategoryAndIsDraftAndPostType(category, false, PostType.MATCHING, pageable);
+
+        List<PostResponseDTO.GetPost> postRes = postPage.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                        post -> {
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
+                        }
+                ).toList();
+
+        return PostResponseConverter.toGetPostList(postPage, postRes);
     }
 
     /** 인기글 조회 */
