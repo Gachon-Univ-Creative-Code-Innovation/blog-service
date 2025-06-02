@@ -42,6 +42,7 @@ dependencies {
 	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:bea722bf13'
 
 
+
 	//elastic search
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -65,6 +66,8 @@ dependencies {
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+	implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
 }
 

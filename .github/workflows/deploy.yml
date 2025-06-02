@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    uses: Gachon-Univ-Creative-Code-Innovation/infra-configs/.github/workflows/java-deploy.yml@main
+    with:
+      service: blog-service
+      tag: ${{ github.sha }} # 마지막 커밋 해쉬
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
+      PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+      PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
