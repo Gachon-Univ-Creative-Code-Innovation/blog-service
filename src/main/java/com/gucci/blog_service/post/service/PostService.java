@@ -90,7 +90,7 @@ public class PostService {
 
             //post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail);
+            post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
             post.publish();
             savedPost = postRepository.save(post);
         }  //임시저장글의 원글이 있을경우
@@ -115,7 +115,7 @@ public class PostService {
 
             //Post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail);
+            post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
             savedPost = postRepository.save(post);
         } else {
 
@@ -138,6 +138,7 @@ public class PostService {
                     .userNickName(authorNickName)
                     .thumbnail(thumbnail)
                     .title(dto.getTitle())
+                    .summary(dto.getSummary())
                     .isDraft(false)
                     .category(category)
                     .postType(dto.getPostType())
@@ -248,10 +249,13 @@ public class PostService {
                             UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
                             Integer commentCount = commentRefService.getCommentCount(post);
 
+                            System.out.println("\n\npost ");
+                            System.out.println(post.getTitle());
+                            System.out.println(thumbnail);
+
                             return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                 ).toList();
-
         return PostResponseConverter.toGetPostList(postPage, postRes);
 
     }
@@ -412,7 +416,7 @@ public class PostService {
 
         //Post 업데이트
         String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-        post.update(dto.getTitle(), category, thumbnail);
+        post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
