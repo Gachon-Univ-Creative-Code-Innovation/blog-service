@@ -15,4 +15,21 @@ public class UserServiceResponseDTO {
         @JsonProperty("data")
         List<Long> userIdList;
     }
+
+
+    @Getter
+    @Setter
+    public static class UserProfileDto {
+        String status;
+        String message;
+        @JsonProperty("data")
+        UserProfile userProfile;
+    }
+
+    @Getter
+    @Setter
+    public static class UserProfile {
+        String nickname;
+        String profileUrl;
+    }
 }

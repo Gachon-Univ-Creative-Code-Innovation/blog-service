@@ -16,6 +16,8 @@ import com.gucci.blog_service.post.domain.enums.PostType;
 import com.gucci.blog_service.post.repository.PostDocRepository;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.tag.service.TagService;
+import com.gucci.blog_service.userProfileCache.domain.UserProfile;
+import com.gucci.blog_service.userProfileCache.service.UserProfileService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
@@ -42,6 +44,7 @@ public class PostService {
     private final CategoryService categoryService;
     private final PostSearchService postSearchService;
     private final PostQueryService postQueryService;
+    private final UserProfileService userProfileService;
 
     private final UserServiceClient userServiceClient;
     private final MatchingServiceClient matchingServiceClient;
@@ -51,7 +54,7 @@ public class PostService {
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
-    private final static Integer pageSize = 10;
+    private final static Integer pageSize = 15;
 
     /**
      * 게시글
@@ -87,7 +90,7 @@ public class PostService {
 
             //post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail);
+            post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
             post.publish();
             savedPost = postRepository.save(post);
         }  //임시저장글의 원글이 있을경우
@@ -112,7 +115,7 @@ public class PostService {
 
             //Post 업데이트
             String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-            post.update(dto.getTitle(), category, thumbnail);
+            post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
             savedPost = postRepository.save(post);
         } else {
 
@@ -135,6 +138,7 @@ public class PostService {
                     .userNickName(authorNickName)
                     .thumbnail(thumbnail)
                     .title(dto.getTitle())
+                    .summary(dto.getSummary())
                     .isDraft(false)
                     .category(category)
                     .postType(dto.getPostType())
@@ -151,20 +155,53 @@ public class PostService {
         return savedPost;
     }
 
+    /** 본인 글 조회 paging 적용 안함*/
+    public List<PostResponseDTO.GetPost> getMyPostList(String token) {
+        Long userId = jwtTokenHelper.getUserIdFromToken(token);
+
+        List<Post> postList = postRepository.findAllByUserId(userId);
+        UserProfile profile = userProfileService.getUserProfile(token, userId);
+
+        return postList.stream().map(
+                post -> {
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                    Integer commentCount = commentRefService.getCommentCount(post);
+
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
+                }
+        ).toList();
+    }
+
+    /** 사용자 글 조회 paging 적용 안함*/
+    public List<PostResponseDTO.GetPost> getMyPostList(String token, Long userId) {
+        List<Post> postList = postRepository.findAllByUserId(userId);
+
+        return postList.stream().map(
+                post -> {
+                    String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
+
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
+                }
+        ).toList();
+    }
+
     /** 게시글 하나 상세조회  */
     @Transactional
-    public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
+    public PostResponseDTO.GetPostDetail getPostDetail(String token, Long postId) {
         Post post = postQueryService.getPost(postId);
         PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
         Set<String> tagNameList = tagService.getTagNamesByPost(post);
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
+        UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
 
         //조회시 조회수+1
         post.updateView();
         postSearchService.updateViewCount(post.getPostId(), post.getView());
-        return PostResponseConverter.toGetPostDetailDto(post, contentWithImageUrl, tagNameList);
+        return PostResponseConverter.toGetPostDetailDto(post, profile, contentWithImageUrl, tagNameList);
     }
 
 
@@ -176,24 +213,16 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByPostTypeAndPostIdIn(PostType.POST, followingUserIds, pageable);
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(Post::isDraft).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -202,7 +231,7 @@ public class PostService {
 
 
     /** 전체 글 조회 */
-    public PostResponseDTO.GetPostList getPostAll(String postType, Integer page) {
+    public PostResponseDTO.GetPostList getPostAll(String token, String postType, Integer page) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage;
 
@@ -212,54 +241,41 @@ public class PostService {
             postPage = postRepository.findAllByIsDraftAndPostType(false, PostType.MATCHING, pageable);
         }
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                         post -> {
-                            PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                            if (postDocument == null) {
-                                throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                            }
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            System.out.println("\n\npost ");
+                            System.out.println(post.getTitle());
+                            System.out.println(thumbnail);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                 ).toList();
-
         return PostResponseConverter.toGetPostList(postPage, postRes);
 
     }
 
     /** 카테고리별 글 조회 */
-    public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
+    public PostResponseDTO.GetPostList getPostListByCategory(String token, Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage = postRepository.findAllByCategoryAndIsDraftAndPostType(category, false, PostType.POST, pageable);
 
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -267,29 +283,43 @@ public class PostService {
 
     }
 
+
+    /** 매칭 : 카테고리별 글 조회 */
+    public PostResponseDTO.GetPostList getMatchingPostListByCategory(String token, Long categoryId, Integer page) {
+        Category category = categoryService.getCategory(categoryId);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
+        Page<Post> postPage = postRepository.findAllByCategoryAndIsDraftAndPostType(category, false, PostType.MATCHING, pageable);
+
+        List<PostResponseDTO.GetPost> postRes = postPage.stream()
+                .filter(post -> !post.isDraft()) // 게시글만
+                .map(
+                        post -> {
+                            String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
+                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
+                        }
+                ).toList();
+
+        return PostResponseConverter.toGetPostList(postPage, postRes);
+    }
+
     /** 인기글 조회 */
-    public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
+    public PostResponseDTO.GetPostList getTrendingPostList(String token, Integer page) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         Page<Post> postPage = postRepository.findAllTrending(weekAgo, PostType.POST, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
-
-        //doc 조회
-        List<String> docIds = postPage.stream().filter(not(Post::isDraft)).map(Post::getDocumentId).toList();
-        Map<String, PostDocument> postDocMap = postDocRepository.findAllById(docIds).stream()
-                .collect(Collectors.toMap(PostDocument::getId, Function.identity())); // Function.identity() : 받은 값을 그대로 return
-
 
         List<PostResponseDTO.GetPost> postRes = postPage.stream()
                 .filter(post -> !post.isDraft()) // 게시글만
                 .map(
                 post -> {
-                    PostDocument postDocument = postDocMap.get(post.getDocumentId());
-                    if (postDocument == null) {
-                        throw new CustomException(ErrorCode.NOT_FOUND_POST);
-                    }
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    Integer commentCount = commentRefService.getCommentCount(post);
 
-                    return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                    return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                 }
         ).toList();
 
@@ -352,9 +382,10 @@ public class PostService {
                 .map(
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
+                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
 
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                 ).toList();
 
@@ -408,7 +439,7 @@ public class PostService {
 
         //Post 업데이트
         String thumbnail = htmlImageHelper.extractFirstImageFromSavedContent(postDocument.getContent());
-        post.update(dto.getTitle(), category, thumbnail);
+        post.update(dto.getTitle(), dto.getSummary(), category, thumbnail);
 
         postSearchService.update(post, postDocument, tagNameList);
         return post;
@@ -512,7 +543,7 @@ public class PostService {
         // 임시저장 글을 또 임시저장
         else {
             Post draft = postQueryService.getPost(dto.getDraftPostId());
-            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId()); // todo : NOT_FOUND_POST_CONTENT
+            PostDocument draftDoc = postQueryService.getPostDocument(draft.getDocumentId());
 
             Category category = categoryService.getCategory(dto.getCategoryCode());
 

@@ -16,8 +16,10 @@ public class PostResponseDTO {
         Long postId;
         Long authorId;
         String authorNickname;
+        String profileUrl;
         String title;
         String content;
+        String summary;
         Long view;
         Set<String> tagNameList;
         Long categoryCode;
@@ -32,11 +34,12 @@ public class PostResponseDTO {
         Long postId;
         Long authorId;
         String authorNickname;
+        String profileUrl;
+        Integer commentCount;
         String title;
         String summary;
         String thumbnail;
         Long view;
-        Set<String> tagNameList;
         Long categoryCode;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;

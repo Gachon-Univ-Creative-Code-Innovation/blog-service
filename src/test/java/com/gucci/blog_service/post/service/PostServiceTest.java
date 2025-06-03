@@ -71,12 +71,12 @@ public class PostServiceTest {
     @DisplayName("게시글 생성 : draftPostId != null (임시저장 후 발행)")
     void createPostAfterDraft() throws Exception {
         PostRequestDTO.CreatePost dto = PostRequestDTO.CreatePost.builder()
-                .postId(1L)
+                .draftPostId(1L)
                 .title("제목")
                 .content("내용")
                 .build();
         Post draft = Post.builder()
-                .postId(dto.getPostId())
+                .postId(dto.getDraftPostId())
                 .documentId("draftPostId")
                 .title(dto.getTitle())
                 .isDraft(true)
@@ -92,13 +92,13 @@ public class PostServiceTest {
                 .build();
 
         Mockito.when(jwtTokenHelper.getUserIdFromToken(token)).thenReturn(userId);
-        Mockito.when(postRepository.findById(dto.getPostId())).thenReturn(Optional.of(draft));
+        Mockito.when(postRepository.findById(dto.getDraftPostId())).thenReturn(Optional.of(draft));
         Mockito.when(postDocRepository.findById(draft.getDocumentId())).thenReturn(Optional.of(draftPostDocument));
         Mockito.when(postRepository.save(any(Post.class))).thenReturn(post);
 
         Post result = postService.createPost(token, dto);
 
-        assertThat(result.getPostId()).isEqualTo(dto.getPostId());
+        assertThat(result.getPostId()).isEqualTo(dto.getDraftPostId());
         assertThat(result.getTitle()).isEqualTo(dto.getTitle());
         assertThat(result.isDraft()).isFalse(); //발행 체크
     }
@@ -107,7 +107,7 @@ public class PostServiceTest {
     @DisplayName("게시글 생성 : draftPostId == null (임시저장 하지 않고 발행)")
     void createPostTest() throws Exception {
         PostRequestDTO.CreatePost dto = PostRequestDTO.CreatePost.builder()
-                .postId(null)
+                .draftPostId(null)
                 .title("제목")
                 .content("내용")
                 .build();
@@ -130,7 +130,7 @@ public class PostServiceTest {
 
         Post result = postService.createPost(token, dto);
 
-        assertThat(result.getPostId()).isEqualTo(dto.getPostId());
+        assertThat(result.getPostId()).isEqualTo(dto.getDraftPostId());
         assertThat(result.getTitle()).isEqualTo(dto.getTitle());
         assertThat(result.isDraft()).isFalse(); //발행 체크
         assertThat(result.getDocumentId()).isEqualTo(savedPostDocument.getId());
@@ -159,7 +159,7 @@ public class PostServiceTest {
         Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         Mockito.when(postDocRepository.findById(postDoc.getId())).thenReturn(Optional.of(postDoc));
 
-        PostResponseDTO.GetPostDetail result = postService.getPostDetail(postId);
+        PostResponseDTO.GetPostDetail result = postService.getPostDetail(token, postId);
 
         assertThat(result.getPostId()).isEqualTo(post.getPostId());
         assertThat(result.getAuthorId()).isEqualTo(post.getUserId());

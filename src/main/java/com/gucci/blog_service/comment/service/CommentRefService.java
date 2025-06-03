@@ -14,6 +14,11 @@ import java.util.List;
 public class CommentRefService {
     private final CommentRepository commentRepository;
 
+    public Integer getCommentCount(Post post) {
+        List<Comment> comments = commentRepository.findAllByPost(post);
+        return comments.size();
+    }
+
     @Transactional
     public void deleteAllByPost(Post post) {
         List<Comment> commentList = commentRepository.findAllByPost(post);

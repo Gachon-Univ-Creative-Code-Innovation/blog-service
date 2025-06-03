@@ -23,6 +23,6 @@ public class PostQueryService {
 
     public PostDocument getPostDocument(String postDocId) {
         return postDocRepository.findById(postDocId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST)); //todo : NOT_FOUND_POST_CONTENT
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_POST_CONTENT)); //todo : NOT_FOUND_POST_CONTENT
     }
 }
