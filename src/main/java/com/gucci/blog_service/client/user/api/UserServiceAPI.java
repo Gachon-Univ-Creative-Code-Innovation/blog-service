@@ -4,6 +4,7 @@ import com.gucci.blog_service.client.user.config.UserServiceFeignConfig;
 import com.gucci.blog_service.client.user.dto.UserServiceResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
@@ -17,8 +18,8 @@ public interface UserServiceAPI {
             @RequestHeader("Authorization") String token
     );
 
-    @GetMapping(value = "/user/main")
+    @GetMapping(value = "/profile-nickname/{userId}")
     UserServiceResponseDTO.UserProfileDto getUserProfile(
-            @RequestHeader("Authorization") String token
+            @PathVariable("userId") Long userId
     );
 }

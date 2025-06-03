@@ -29,7 +29,7 @@ public class UserProfileService {
     @Cacheable(cacheNames = "userProfile", key = "#userId")
     public UserProfile getUserProfile(String token, Long userId) {
         // 캐시에 없으면 user-service API 호출
-        return userServiceClient.getUserProfile(token, userId);
+        return userServiceClient.getUserProfile(userId);
     }
 
     /**
