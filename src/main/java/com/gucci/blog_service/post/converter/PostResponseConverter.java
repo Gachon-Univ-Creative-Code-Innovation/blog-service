@@ -22,6 +22,7 @@ public class PostResponseConverter {
                 .view(post.getView())
                 .title(post.getTitle())
                 .content(content)
+                .summary(post.getSummary())
                 .tagNameList(tagNameList)
                 .categoryCode(post.getCategory().getCategoryType().getCode())
                 .postType(post.getPostType().name())

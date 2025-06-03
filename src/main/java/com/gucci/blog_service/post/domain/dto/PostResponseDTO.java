@@ -19,6 +19,7 @@ public class PostResponseDTO {
         String profileUrl;
         String title;
         String content;
+        String summary;
         Long view;
         Set<String> tagNameList;
         Long categoryCode;
