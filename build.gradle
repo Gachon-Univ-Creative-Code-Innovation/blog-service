@@ -59,8 +59,11 @@ dependencies {
 	//img tag parsing
 	implementation 'org.jsoup:jsoup:1.17.2'
 
+	//env 자동 등록
 	implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
+	//kafka
+	implementation 'org.springframework.kafka:spring-kafka'
 }
 
 dependencyManagement {
