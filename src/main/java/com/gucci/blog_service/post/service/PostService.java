@@ -7,6 +7,8 @@ import com.gucci.blog_service.client.user.client.UserServiceClient;
 import com.gucci.blog_service.comment.service.CommentRefService;
 import com.gucci.blog_service.global.HtmlImageHelper;
 import com.gucci.blog_service.global.JwtTokenHelper;
+import com.gucci.blog_service.kafka.dto.NewPostCreatedEvent;
+import com.gucci.blog_service.kafka.producer.BlogEventProducer;
 import com.gucci.blog_service.post.converter.PostResponseConverter;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
@@ -54,6 +56,8 @@ public class PostService {
     private final HtmlImageHelper htmlImageHelper;
     private final S3Service s3Service;
 
+    private final BlogEventProducer blogEventProducer;
+  
     private final static Integer pageSize = 15;
 
     /**
@@ -148,10 +152,20 @@ public class PostService {
             //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
             tagService.createTags(savedPost, dto.getTagNameList(), userId);
             savedTags = tagService.getTagNamesByPost(post);
+
+            // 임시 저장이 아닌 경우만 알림 발행
+            blogEventProducer.publishNewPostEvent(
+                    NewPostCreatedEvent.builder()
+                            .postId(savedPost.getPostId())
+                            .authorId(savedPost.getUserId())
+                            .authorNickname(savedPost.getUserNickName())
+                            .build()
+            );
         }
 
         //elastic search에 인덱싱
         postSearchService.index(savedPost, savedPostDocument, savedTags);
+
         return savedPost;
     }
 

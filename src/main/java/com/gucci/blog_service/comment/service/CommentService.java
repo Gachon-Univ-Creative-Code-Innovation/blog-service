@@ -5,6 +5,9 @@ import com.gucci.blog_service.comment.domain.dto.CommentRequestDTO;
 import com.gucci.blog_service.comment.domain.dto.CommentResponseDTO;
 import com.gucci.blog_service.comment.repository.CommentRepository;
 import com.gucci.blog_service.global.JwtTokenHelper;
+import com.gucci.blog_service.kafka.dto.NewCommentCreatedEvent;
+import com.gucci.blog_service.kafka.dto.NewReplyCreatedEvent;
+import com.gucci.blog_service.kafka.producer.BlogEventProducer;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.service.PostService;
 import com.gucci.blog_service.userProfileCache.domain.UserProfile;
@@ -25,6 +28,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final JwtTokenHelper jwtTokenHelper;
+    private final BlogEventProducer blogEventProducer;
 
     public Comment createComment(CommentRequestDTO.CreateComment createComment, String token) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
@@ -45,7 +49,38 @@ public class CommentService {
                 .isDeleted(false)
                 .build();
 
-        return commentRepository.save(newComment);
+
+        Comment saved = commentRepository.save(newComment);
+
+        if (parentComment != null) {
+            // 새 답글 이벤트 발행
+            Long parentUserId = parentComment.getUserId();
+            if (!parentUserId.equals(userId)) {
+                blogEventProducer.publishNewReplyEvent(
+                        NewReplyCreatedEvent.builder()
+                                .postId(saved.getPost().getPostId())
+                                .receiverId(saved.getParentComment().getUserId())
+                                .commenterId(userId)
+                                .commenterNickname(userNickName)
+                                .build()
+                );
+            }
+        } else {
+            // 새 댓글 이벤트 발행
+            Long postAuthorId = post.getUserId();
+            if (!postAuthorId.equals(userId)) {
+                blogEventProducer.publishNewCommentEvent(
+                        NewCommentCreatedEvent.builder()
+                                .postId(post.getPostId())
+                                .authorId(postAuthorId)
+                                .commenterId(userId)
+                                .commenterNickname(userNickName)
+                                .build()
+                );
+            }
+        }
+
+        return saved;
     }
 
     // 포스트 별 댓글 조회
