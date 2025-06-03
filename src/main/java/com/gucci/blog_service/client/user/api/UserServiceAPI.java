@@ -16,4 +16,9 @@ public interface UserServiceAPI {
     UserServiceResponseDTO.UserFollowingIds getUserFollowingId(
             @RequestHeader("Authorization") String token
     );
+
+    @GetMapping(value = "/user/main")
+    UserServiceResponseDTO.UserProfileDto getUserProfile(
+            @RequestHeader("Authorization") String token
+    );
 }

@@ -36,7 +36,11 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:v1.0.2'
+
+	//dto 통일
+//	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:v1.0.2'
+	implementation 'com.github.Gachon-Univ-Creative-Code-Innovation:alog-common:bea722bf13'
+
 
 
 	//elastic search
@@ -58,6 +62,10 @@ dependencies {
 
 	//img tag parsing
 	implementation 'org.jsoup:jsoup:1.17.2'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 	//env 자동 등록
 	implementation 'me.paulschwarz:spring-dotenv:3.0.0'

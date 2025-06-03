@@ -14,7 +14,7 @@ public class GlobalCorsConfig implements WebMvcConfigurer {
                 // 허용할 Origin 목록: React 개발 서버가 실행되는 주소
                 .allowedOrigins("http://localhost:5173")
                 // 허용할 HTTP 메서드 (필요한 경우에 맞춰 추가/삭제)
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
                 // 허용할 헤더 (Authorization, Content-Type 등)
                 .allowedHeaders("Authorization", "Content-Type", "Accept")
                 // 필요 시 클라이언트 측으로 해당 헤더를 노출

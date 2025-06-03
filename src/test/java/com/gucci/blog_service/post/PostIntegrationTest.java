@@ -135,7 +135,7 @@ public class PostIntegrationTest {
 
         // 4. 발행
         PostRequestDTO.CreatePost createPost = PostRequestDTO.CreatePost.builder()
-                .postId(draftId)
+                .draftPostId(draftId)
                 .content("최종 게시글 내용")
                 .title("최종 게시글 제목")
                 .tagNameList(List.of("tag1", "tag4"))

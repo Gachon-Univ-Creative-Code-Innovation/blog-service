@@ -16,7 +16,10 @@ public enum CategoryType{
     TROUBLESHOOT(7L, "문제해결"),
     GROWTH(8L, "성장 기록"),
     IT_NEWS(9L, "IT 뉴스"),
-    ETC(10L, "기타");
+    ETC(10L, "기타"),
+    STUDY(11L, "스터디"),
+    CONTEXT(12L, "공모전")
+    ;
 
     private final Long code;
     private final String type;

@@ -27,6 +27,10 @@ spring:
         enabled: true
       connection-timeout: 5s
       socket-timeout: 3s
+    redis:
+      host: localhost
+      port: 6379
+      
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -34,6 +38,13 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
+        
+# Feign 로그 레벨을 높여서 호출/응답을 모두 기록
+logging:
+  level:
+    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.cache: INFO
+    org.springframework.data.redis: INFO
 
 aws:
   s3:

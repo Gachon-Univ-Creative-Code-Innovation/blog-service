@@ -10,6 +10,8 @@ import com.gucci.blog_service.kafka.dto.NewReplyCreatedEvent;
 import com.gucci.blog_service.kafka.producer.BlogEventProducer;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.service.PostService;
+import com.gucci.blog_service.userProfileCache.domain.UserProfile;
+import com.gucci.blog_service.userProfileCache.service.UserProfileService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
@@ -22,6 +24,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CommentService {
     private final PostService postService;
+    private final UserProfileService userProfileService;
+
     private final CommentRepository commentRepository;
     private final JwtTokenHelper jwtTokenHelper;
     private final BlogEventProducer blogEventProducer;
@@ -80,7 +84,7 @@ public class CommentService {
     }
 
     // 포스트 별 댓글 조회
-    public CommentResponseDTO.GetCommentList getCommentsByPostId(Long postId) {
+    public CommentResponseDTO.GetCommentList getCommentsByPostId(String token, Long postId) {
         Post post = postService.getPostById(postId);
         List<Comment> allComments = commentRepository.findAllByPost(post);
 
@@ -91,7 +95,7 @@ public class CommentService {
 
         List<CommentResponseDTO.GetComment> result = new ArrayList<>();
         for (Comment root : rootComments) {
-            buildCommentTree(result, root, 0);
+            buildCommentTree(token, result, root, 0);
         }
 
         return CommentResponseDTO.GetCommentList.builder()
@@ -99,7 +103,8 @@ public class CommentService {
                 .build();
     }
 
-    private void buildCommentTree(List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
+    private void buildCommentTree(String token, List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
+        UserProfile profile = userProfileService.getUserProfile(token, comment.getUserId());
         CommentResponseDTO.GetComment dto = CommentResponseDTO.GetComment.builder()
                 .commentId(comment.getCommentId())
                 .parentCommentId(
@@ -109,8 +114,9 @@ public class CommentService {
                 .content(comment.getContent())
                 .createTime(comment.getCreatedAt())
                 .updateTime(comment.getUpdatedAt())
-                .authorNickname(comment.getUserNickName())
+                .authorNickname(profile.getNickname())
                 .authorId(comment.getUserId())
+                .authorProfileUrl(profile.getProfileUrl())
                 .depth(depth)
                 .isDeleted(comment.getIsDeleted())
                 .build();
@@ -125,7 +131,7 @@ public class CommentService {
                 .toList();
 
         for (Comment child : childComments) {
-            buildCommentTree(result, child, depth + 1);
+            buildCommentTree(token, result, child, depth + 1);
         }
     }
 

@@ -8,6 +8,8 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.gucci.blog_service.comment.service.CommentRefService;
+import com.gucci.blog_service.comment.service.CommentService;
 import com.gucci.blog_service.post.converter.PostResponseConverter;
 import com.gucci.blog_service.post.domain.Post;
 import com.gucci.blog_service.post.domain.PostDocument;
@@ -17,6 +19,8 @@ import com.gucci.blog_service.post.domain.enums.PostType;
 import com.gucci.blog_service.post.repository.PostRepository;
 import com.gucci.blog_service.post.repository.PostSearchRepository;
 import com.gucci.blog_service.tag.service.TagService;
+import com.gucci.blog_service.userProfileCache.domain.UserProfile;
+import com.gucci.blog_service.userProfileCache.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +44,8 @@ public class PostSearchService {
     private final PostSearchRepository postSearchRepository;
     private final TagService tagService;
     private final S3Service s3Service;
+    private final UserProfileService userProfileService;
+    private final CommentRefService commentRefService;
 
     @Autowired
     private ElasticsearchClient elasticsearchClient;
@@ -127,7 +133,7 @@ public class PostSearchService {
     }
 
 
-    public PostResponseDTO.GetPostList search(String keyword, PostType postType, Integer sortBy, Integer page) {
+    public PostResponseDTO.GetPostList search(String token, String keyword, PostType postType, Integer sortBy, Integer page) {
         // init
         int size = 10;
         Pageable pageable = PageRequest.of(page, size);
@@ -183,9 +189,11 @@ public class PostSearchService {
                             return null;
                         }
                         else {
-                            Set<String> tagNameList = tagService.getTagNamesByPost(post);
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            return PostResponseConverter.toGetPostDto(post, thumbnail, tagNameList);
+                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            Integer commentCount = commentRefService.getCommentCount(post);
+
+                            return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
                         }
                     })
                     .toList();

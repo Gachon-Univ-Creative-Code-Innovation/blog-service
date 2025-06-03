@@ -85,7 +85,7 @@ public class CommentControllerTest {
                 .commentList(List.of(comment1, comment2))
                 .build();
 
-        Mockito.when(commentService.getCommentsByPostId(1L)).thenReturn(commentList);
+        Mockito.when(commentService.getCommentsByPostId(anyString(), 1L)).thenReturn(commentList);
 
         mockMvc.perform(get("/api/blog-service/comments/1"))
                 .andExpect(status().isOk())

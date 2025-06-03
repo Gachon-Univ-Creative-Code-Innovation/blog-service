@@ -30,6 +30,9 @@ public class PostRequestDTO {
         @NotBlank(message = "글 내용은 필수입니다.")
         String content;
 
+        @Schema(description = "요약", example = "글 요약")
+        String summary;
+
         @Schema(description = "tag가 없을 시 빈 리스트를 입력합니다", example = "[\"tag1\", \"tag2\"]")
         List<String> tagNameList;
 
@@ -38,8 +41,6 @@ public class PostRequestDTO {
 
         @Schema(description = "postType을 입력합니다. POST, MATCHING", example = "POST")
         private PostType postType;
-
-
     }
 
     @Getter
@@ -60,6 +61,9 @@ public class PostRequestDTO {
 
         @Schema(description = "category code를 입력합니다. null 전송 시 자동으로 기타 카테고리로 분류됩니다.", example = "1")
         Long categoryCode;
+
+        @Schema(description = "요약", example = "글 요약")
+        String summary;
     }
 
     @Getter
