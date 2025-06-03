@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class NewPostCreatedEvent {
-    private Long authorId;
     private Long postId;
+    private Long authorId;
+    private String authorNickname;
 }

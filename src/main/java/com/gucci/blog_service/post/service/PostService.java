@@ -152,8 +152,9 @@ public class PostService {
             // 임시 저장이 아닌 경우만 알림 발행
             blogEventProducer.publishNewPostEvent(
                     NewPostCreatedEvent.builder()
-                            .authorId(savedPost.getUserId())
                             .postId(savedPost.getPostId())
+                            .authorId(savedPost.getUserId())
+                            .authorNickname(savedPost.getUserNickName())
                             .build()
             );
         }

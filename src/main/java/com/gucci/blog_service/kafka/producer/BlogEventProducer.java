@@ -13,20 +13,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlogEventProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, NewPostCreatedEvent> newPostKafkaTemplate;
+    private final KafkaTemplate<String, NewCommentCreatedEvent> newCommentKafkaTemplate;
+    private final KafkaTemplate<String, NewReplyCreatedEvent> newReplyKafkaTemplate;
 
     public void publishNewPostEvent(NewPostCreatedEvent message) {
         log.info("Kafka 새 글 생성 이벤트 발행: {}", message);
-        kafkaTemplate.send("post.created", message);
+        newPostKafkaTemplate.send("post.created", message);
     }
 
     public void publishNewCommentEvent(NewCommentCreatedEvent message) {
         log.info("Kafka 댓글 생성 이벤트 발행: {}", message);
-        kafkaTemplate.send("comment.created", message);
+        newCommentKafkaTemplate.send("comment.created", message);
     }
 
     public void publishNewReplyEvent(NewReplyCreatedEvent message) {
         log.info("Kafka 답글 생성 이벤트 발행: {}", message);
-        kafkaTemplate.send("reply.created", message);
+        newReplyKafkaTemplate.send("reply.created", message);
     }
 }
