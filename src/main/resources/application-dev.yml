@@ -19,8 +19,8 @@ spring:
       port: 27017
       authentication-database: admin
       database: alog
-    #mongodb:
-     # uri: ${LOCAL_MONGODB_URI}
+      username: gucci
+      password: password
     elasticsearch:
       uris: localhost:9200
       repositories:
@@ -54,3 +54,6 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET}
+
+server:
+  port: 8082
