@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-service
+  namespace: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog-service
+  template:
+    metadata:
+      labels:
+        app: blog-service
+    spec:
+      containers:
+        - name: blog-service
+          image: msj9965/alog-blog:main
+          ports:
+            - containerPort: 8030
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: cloud
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: JWT_SECRET
+            - name: CLOUD_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: CLOUD_DB_URL
+            - name: CLOUD_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: CLOUD_DB_USERNAME
+            - name: CLOUD_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: CLOUD_DB_PASSWORD
+            - name: MONGO_DB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: MONGO_DB_URI
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: S3_ACCESS_KEY
+            - name: S3_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: S3_BUCKET_NAME
+            - name: S3_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: S3_REGION
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: S3_SECRET_KEY
+            - name: FEIGN_USER_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: FEIGN_USER_SERVICE_URL
+            - name: FEIGN_MATCHING_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: FEIGN_MATCHING_SERVICE_URL
