@@ -32,10 +32,8 @@ public class CommentController {
     @Operation(summary = "게시글의 댓글 조회", description = "게시글에 해당하는 댓글을 조회합니다")
     @GetMapping("/{postId}")
     public ApiResponse<CommentResponseDTO.GetCommentList> getComments(
-            HttpServletRequest request,
             @Schema(description = "댓글을 조회하고 싶은 게시글 id") @PathVariable Long postId){
-        String token = request.getHeader("Authorization");
-        CommentResponseDTO.GetCommentList getComments = commentService.getCommentsByPostId(token, postId);
+        CommentResponseDTO.GetCommentList getComments = commentService.getCommentsByPostId(postId);
         return ApiResponse.success(getComments);
     }
 

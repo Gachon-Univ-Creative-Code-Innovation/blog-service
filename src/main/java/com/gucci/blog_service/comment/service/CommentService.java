@@ -84,7 +84,7 @@ public class CommentService {
     }
 
     // 포스트 별 댓글 조회
-    public CommentResponseDTO.GetCommentList getCommentsByPostId(String token, Long postId) {
+    public CommentResponseDTO.GetCommentList getCommentsByPostId(Long postId) {
         Post post = postService.getPostById(postId);
         List<Comment> allComments = commentRepository.findAllByPost(post);
 
@@ -95,7 +95,7 @@ public class CommentService {
 
         List<CommentResponseDTO.GetComment> result = new ArrayList<>();
         for (Comment root : rootComments) {
-            buildCommentTree(token, result, root, 0);
+            buildCommentTree(result, root, 0);
         }
 
         return CommentResponseDTO.GetCommentList.builder()
@@ -103,8 +103,8 @@ public class CommentService {
                 .build();
     }
 
-    private void buildCommentTree(String token, List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
-        UserProfile profile = userProfileService.getUserProfile(token, comment.getUserId());
+    private void buildCommentTree(List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
+        UserProfile profile = userProfileService.getUserProfile(comment.getUserId());
         CommentResponseDTO.GetComment dto = CommentResponseDTO.GetComment.builder()
                 .commentId(comment.getCommentId())
                 .parentCommentId(
@@ -131,7 +131,7 @@ public class CommentService {
                 .toList();
 
         for (Comment child : childComments) {
-            buildCommentTree(token, result, child, depth + 1);
+            buildCommentTree(result, child, depth + 1);
         }
     }
 

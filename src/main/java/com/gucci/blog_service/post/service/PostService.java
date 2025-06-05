@@ -174,7 +174,7 @@ public class PostService {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
         List<Post> postList = postRepository.findAllByUserId(userId);
-        UserProfile profile = userProfileService.getUserProfile(token, userId);
+        UserProfile profile = userProfileService.getUserProfile(userId);
 
         return postList.stream().map(
                 post -> {
@@ -187,13 +187,13 @@ public class PostService {
     }
 
     /** 사용자 글 조회 paging 적용 안함*/
-    public List<PostResponseDTO.GetPost> getMyPostList(String token, Long userId) {
+    public List<PostResponseDTO.GetPost> getMyPostList(Long userId) {
         List<Post> postList = postRepository.findAllByUserId(userId);
 
         return postList.stream().map(
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                     Integer commentCount = commentRefService.getCommentCount(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
@@ -203,14 +203,14 @@ public class PostService {
 
     /** 게시글 하나 상세조회  */
     @Transactional
-    public PostResponseDTO.GetPostDetail getPostDetail(String token, Long postId) {
+    public PostResponseDTO.GetPostDetail getPostDetail(Long postId) {
         Post post = postQueryService.getPost(postId);
         PostDocument postDocument = postQueryService.getPostDocument(post.getDocumentId());
         Set<String> tagNameList = tagService.getTagNamesByPost(post);
         
         // 본문 HTML 내 이미지 objectKey-> url 변환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
-        UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+        UserProfile profile = userProfileService.getUserProfile(post.getUserId());
 
         //조회시 조회수+1
         post.updateView();
@@ -233,7 +233,7 @@ public class PostService {
                 .map(
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                     Integer commentCount = commentRefService.getCommentCount(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
@@ -245,7 +245,7 @@ public class PostService {
 
 
     /** 전체 글 조회 */
-    public PostResponseDTO.GetPostList getPostAll(String token, String postType, Integer page) {
+    public PostResponseDTO.GetPostList getPostAll(String postType, Integer page) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
         Page<Post> postPage;
 
@@ -260,7 +260,7 @@ public class PostService {
                 .map(
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                             Integer commentCount = commentRefService.getCommentCount(post);
 
                             System.out.println("\n\npost ");
@@ -275,7 +275,7 @@ public class PostService {
     }
 
     /** 카테고리별 글 조회 */
-    public PostResponseDTO.GetPostList getPostListByCategory(String token, Long categoryId, Integer page) {
+    public PostResponseDTO.GetPostList getPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
@@ -286,7 +286,7 @@ public class PostService {
                 .map(
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                     Integer commentCount = commentRefService.getCommentCount(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
@@ -299,7 +299,7 @@ public class PostService {
 
 
     /** 매칭 : 카테고리별 글 조회 */
-    public PostResponseDTO.GetPostList getMatchingPostListByCategory(String token, Long categoryId, Integer page) {
+    public PostResponseDTO.GetPostList getMatchingPostListByCategory(Long categoryId, Integer page) {
         Category category = categoryService.getCategory(categoryId);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
@@ -310,7 +310,7 @@ public class PostService {
                 .map(
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                             Integer commentCount = commentRefService.getCommentCount(post);
 
                             return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
@@ -321,7 +321,7 @@ public class PostService {
     }
 
     /** 인기글 조회 */
-    public PostResponseDTO.GetPostList getTrendingPostList(String token, Integer page) {
+    public PostResponseDTO.GetPostList getTrendingPostList(Integer page) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         Page<Post> postPage = postRepository.findAllTrending(weekAgo, PostType.POST, PageRequest.of(page, pageSize)); //7일 이내 작성된 글 조회수 기준 정렬
 
@@ -330,7 +330,7 @@ public class PostService {
                 .map(
                 post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                    UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                     Integer commentCount = commentRefService.getCommentCount(post);
 
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
@@ -396,7 +396,7 @@ public class PostService {
                 .map(
                         post -> {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                             Integer commentCount = commentRefService.getCommentCount(post);
 
                             return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
