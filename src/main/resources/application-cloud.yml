@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "optional:configserver:"
   cloud:
     config:
       uri: http://config-service.config.svc.cluster.local:8888
