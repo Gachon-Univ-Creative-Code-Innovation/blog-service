@@ -29,8 +29,6 @@ public class Post extends BaseEntity { //todo: user연결하기
     @Column(nullable = false)
     private Long userId;
 
-    private String userNickName;
-
     @Column(nullable = false)
     private String title;
 
@@ -76,9 +74,6 @@ public class Post extends BaseEntity { //todo: user연결하기
     public void update(String title, Category category) {
         this.title = title;
         this.category = category;
-    }
-    public void update(String userNickName) {
-        this.userNickName = userNickName;
     }
 
     public void publish() {

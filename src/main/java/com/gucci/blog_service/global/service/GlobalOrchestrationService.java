@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 public class GlobalOrchestrationService {
     private final PostService postService;
     private final CommentService commentService;
-
-    public void updateUserNickname(GlobalRequestDTO.UpdateUserNickname request) {
-        postService.updateUserNickname(request.getUserId(), request.getNewNickname());
-        commentService.updateUserNickname(request.getUserId(), request.getNewNickname());
-    }
+//
+//    public void updateUserNickname(GlobalRequestDTO.UpdateUserNickname request) {
+//        postService.updateUserNickname(request.getUserId(), request.getNewNickname());
+//        commentService.updateUserNickname(request.getUserId(), request.getNewNickname());
+//    }
 }

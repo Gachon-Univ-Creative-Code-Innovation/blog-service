@@ -139,7 +139,6 @@ public class PostService {
                     .view(0L)
                     .documentId(postDocument.getId())
                     .userId(userId)
-                    .userNickName(authorNickName)
                     .thumbnail(thumbnail)
                     .title(dto.getTitle())
                     .summary(dto.getSummary())
@@ -152,13 +151,14 @@ public class PostService {
             //태그 생성, 이때 post 객체가 DB에서 조회된 영속 상태여야함
             tagService.createTags(savedPost, dto.getTagNameList(), userId);
             savedTags = tagService.getTagNamesByPost(post);
+            UserProfile userProfile = userProfileService.getUserProfile(userId);
 
             // 임시 저장이 아닌 경우만 알림 발행
             blogEventProducer.publishNewPostEvent(
                     NewPostCreatedEvent.builder()
                             .postId(savedPost.getPostId())
                             .authorId(savedPost.getUserId())
-                            .authorNickname(savedPost.getUserNickName())
+                            .authorNickname(userProfile.getNickname())
                             .build()
             );
         }
@@ -495,7 +495,6 @@ public class PostService {
     @Transactional
     public Post createDraft(String token, PostRequestDTO.CreateDraft dto) {
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
-        String authorNickName = jwtTokenHelper.getNicknameFromToken(token);
 
         //글 발행 전 임시저장
         if (dto.getDraftPostId() == null && dto.getParentPostId() == null){
@@ -513,7 +512,6 @@ public class PostService {
                     .view(0L)
                     .documentId(postDocument.getId())
                     .userId(userId)
-                    .userNickName(authorNickName)
                     .title(dto.getTitle())
                     .isDraft(true)
                     .category(category)
@@ -542,7 +540,6 @@ public class PostService {
                     .view(0L)
                     .parentPostId(dto.getParentPostId())
                     .documentId(postDocument.getId())
-                    .userNickName(authorNickName)
                     .userId(userId)
                     .title(dto.getTitle())
                     .isDraft(true)
@@ -592,8 +589,9 @@ public class PostService {
 
         //image url과 함께 반환
         String contentWithImageUrl = htmlImageHelper.convertImageKeysToPresignedUrls(postDocument.getContent());
+        UserProfile userProfile = userProfileService.getUserProfile(userId);
 
-        return PostResponseConverter.toGetDraftDetailDto(post, contentWithImageUrl, tagNameList);
+        return PostResponseConverter.toGetDraftDetailDto(post, userProfile, contentWithImageUrl, tagNameList);
     }
 
 
@@ -653,15 +651,6 @@ public class PostService {
 
     public Post getPostById(Long postId) {
         return postQueryService.getPost(postId);
-    }
-
-    @Transactional
-    public void updateUserNickname(Long userId, String nickname) {
-        List<Post> postList = postRepository.findAllByUserId(userId);
-        postList.forEach(post -> post.update(nickname));
-
-        List<String> postSearchIds = postList.stream().map(post -> Long.toHexString(post.getPostId())).toList();
-        postSearchService.updateUserNickname(postSearchIds, nickname);
     }
 
     /**
