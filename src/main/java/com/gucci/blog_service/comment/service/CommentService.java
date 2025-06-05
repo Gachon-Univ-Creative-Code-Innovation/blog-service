@@ -42,7 +42,6 @@ public class CommentService {
 
         Comment newComment = Comment.builder()
                 .userId(userId)
-                .userNickName(userNickName)
                 .post(post)
                 .content(createComment.getContent())
                 .parentComment(parentComment)
@@ -167,9 +166,5 @@ public class CommentService {
         comment.setDeleted();
     }
 
-    @Transactional
-    public void updateUserNickname(Long userId, String nickName) {
-        List<Comment> commentList = commentRepository.findAllByUserId(userId);
-        commentList.forEach(comment -> comment.update(nickName));
-    }
+
 }

@@ -32,8 +32,6 @@ public class Comment extends BaseEntity { //todo: user연결하기
 
     private Long userId;
 
-    private String userNickName;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
@@ -51,13 +49,10 @@ public class Comment extends BaseEntity { //todo: user연결하기
     public void updateContent(String content){
         this.content = content;
     }
-    public void update(String userNickName){
-        this.userNickName = userNickName;
-    }
+
     public void setDeleted(){
         this.isDeleted = true;
         this.content = "삭제된 댓글입니다.";
         this.userId = null;
-        this.userNickName = null;
     }
 }

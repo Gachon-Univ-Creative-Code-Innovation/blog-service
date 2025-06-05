@@ -28,9 +28,6 @@ public class PostSearch {
     private String title;
 
     @Field(type = FieldType.Keyword)
-    private String author;
-
-    @Field(type = FieldType.Keyword)
     private Set<String> tags;
 
     @Field(type = FieldType.Text, analyzer = "korean")

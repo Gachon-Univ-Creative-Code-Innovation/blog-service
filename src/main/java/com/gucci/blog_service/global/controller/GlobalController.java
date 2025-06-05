@@ -2,7 +2,6 @@ package com.gucci.blog_service.global.controller;
 
 
 import com.gucci.blog_service.global.dto.GlobalRequestDTO;
-import com.gucci.blog_service.global.service.GlobalOrchestrationService;
 import com.gucci.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/blog-service/global")
 public class GlobalController {
-    private final GlobalOrchestrationService globalOrchestrationService;
+//    private final GlobalOrchestrationService globalOrchestrationService;
 
 //    /** 닉네임 변경 반응 */
 //    @Operation(summary = "[Server전용] post 닉네임 변경 반응", description = "user-service와 user nickname sync를 맞추기 위한 닉네임 변경 반응 API")

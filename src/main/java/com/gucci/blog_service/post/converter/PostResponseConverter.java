@@ -66,13 +66,13 @@ public class PostResponseConverter {
     /**
      * 임시저장 글
      */
-    public static PostResponseDTO.GetDraftDetail toGetDraftDetailDto(Post post, String content, Set<String> tagNameList) {
+    public static PostResponseDTO.GetDraftDetail toGetDraftDetailDto(Post post, UserProfile userProfile, String content, Set<String> tagNameList) {
         return PostResponseDTO.GetDraftDetail.builder()
                 .draftPostId(post.getPostId())
                 .parentPostId(post.getParentPostId())
                 .authorId(post.getUserId())
                 .title(post.getTitle())
-                .authorNickname(post.getUserNickName())
+                .authorNickname(userProfile.getNickname())
                 .content(content)
                 .tagNameList(tagNameList)
                 .categoryCode(post.getCategory().getCategoryType().getCode())
