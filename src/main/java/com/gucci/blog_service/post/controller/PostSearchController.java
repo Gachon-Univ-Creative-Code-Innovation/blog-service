@@ -23,25 +23,21 @@ public class PostSearchController {
     @Operation(summary = "게시글 검색", description = "게시글 본문과 제목에서 키워드를 검색합니다 ")
     @GetMapping
     public PostResponseDTO.GetPostList postSearch(
-            HttpServletRequest request,
             @Schema(description = "검색할 키워드를 입력합니다")@RequestParam String keyword,
             @Schema(description = "1 : 관련도순, 2 : 최신순, 3 : 인기순") @RequestParam Integer sortBy,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ) {
-        String token = request.getHeader("Authorization");
-        return postSearchService.search(token, keyword, PostType.POST, sortBy, page);
+        return postSearchService.search(keyword, PostType.POST, sortBy, page);
     }
 
     @Operation(summary = "매칭 글 검색", description = "매칭 글 본문과 제목에서 키워드를 검색합니다 ")
     @GetMapping("/matching")
     public PostResponseDTO.GetPostList matchingSearch(
-            HttpServletRequest request,
             @Schema(description = "검색할 키워드를 입력합니다")@RequestParam String keyword,
             @Schema(description = "1 : 관련도순, 2 : 최신순, 3 : 인기순") @RequestParam Integer sortBy,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다", example = "0") @RequestParam(name = "page") int page
     ) {
-        String token = request.getHeader("Authorization");
-        return postSearchService.search(token, keyword, PostType.MATCHING, sortBy, page);
+        return postSearchService.search(keyword, PostType.MATCHING, sortBy, page);
     }
 
 }

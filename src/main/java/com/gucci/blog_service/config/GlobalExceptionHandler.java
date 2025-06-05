@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-//@RestControllerAdvice(annotations = {RestController.class}, basePackageClasses = {
-//        UserProfileController.class,
-//        PostController.class,
-//        PostSearchController.class,
-//        S3Controller.class,
-//        GlobalController.class,
-//        CommentController.class
-//})
+@RestControllerAdvice(annotations = {RestController.class}, basePackageClasses = {
+        UserProfileController.class,
+        PostController.class,
+        PostSearchController.class,
+        S3Controller.class,
+        GlobalController.class,
+        CommentController.class
+})
 public class GlobalExceptionHandler {
 
     /**

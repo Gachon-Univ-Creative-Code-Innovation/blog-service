@@ -27,9 +27,9 @@ public class UserProfileService {
      * key="#userId": 캐시 키를 userId로 지정
      */
     @Cacheable(cacheNames = "userProfile", key = "#userId")
-    public UserProfile getUserProfile(String token, Long userId) {
+    public UserProfile getUserProfile(Long userId) {
         // 캐시에 없으면 user-service API 호출
-        return userServiceClient.getUserProfile(token, userId);
+        return userServiceClient.getUserProfile(userId);
     }
 
     /**

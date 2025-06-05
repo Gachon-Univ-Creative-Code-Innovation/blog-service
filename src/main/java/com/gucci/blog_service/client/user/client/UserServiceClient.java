@@ -23,10 +23,10 @@ public class UserServiceClient {
         return res.getUserIdList();
     }
 
-    public UserProfile getUserProfile(String token, Long userId) {
+    public UserProfile getUserProfile(Long userId) {
         logger.debug("debug 시작");
 
-        UserServiceResponseDTO.UserProfileDto res = userServiceAPI.getUserProfile(token);
+        UserServiceResponseDTO.UserProfileDto res = userServiceAPI.getUserProfile(userId);
         logger.debug("debug "+res.getUserProfile().getNickname());
         return UserProfile.builder()
                 .userId(userId)

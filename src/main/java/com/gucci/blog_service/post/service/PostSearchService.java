@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostSearchService {
     private final PostSearchRepository postSearchRepository;
-    private final TagService tagService;
     private final S3Service s3Service;
     private final UserProfileService userProfileService;
     private final CommentRefService commentRefService;
@@ -133,7 +132,7 @@ public class PostSearchService {
     }
 
 
-    public PostResponseDTO.GetPostList search(String token, String keyword, PostType postType, Integer sortBy, Integer page) {
+    public PostResponseDTO.GetPostList search(String keyword, PostType postType, Integer sortBy, Integer page) {
         // init
         int size = 10;
         Pageable pageable = PageRequest.of(page, size);
@@ -190,7 +189,7 @@ public class PostSearchService {
                         }
                         else {
                             String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                            UserProfile profile = userProfileService.getUserProfile(token, post.getUserId());
+                            UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                             Integer commentCount = commentRefService.getCommentCount(post);
 
                             return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
