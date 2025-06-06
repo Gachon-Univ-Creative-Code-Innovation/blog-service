@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceClient {
     private final UserServiceAPI userServiceAPI;
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(UserServiceClient.class);
 
     public List<Long> getUserFollowingIds(String token) {
         UserServiceResponseDTO.UserFollowingIds res = userServiceAPI.getUserFollowingId(token);
@@ -28,6 +28,7 @@ public class UserServiceClient {
 
         UserServiceResponseDTO.UserProfileDto res = userServiceAPI.getUserProfile(userId);
         logger.debug("debug "+res.getUserProfile().getNickname());
+        logger.debug("debug: "+res.getUserProfile());
         return UserProfile.builder()
                 .userId(userId)
                 .nickname(res.getUserProfile().getNickname())
