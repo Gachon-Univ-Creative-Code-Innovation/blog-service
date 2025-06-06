@@ -103,7 +103,17 @@ public class CommentService {
     }
 
     private void buildCommentTree(List<CommentResponseDTO.GetComment> result, Comment comment, int depth) {
-        UserProfile profile = userProfileService.getUserProfile(comment.getUserId());
+        UserProfile profile;
+        if(comment.getIsDeleted()) {
+            profile = UserProfile.builder()
+                    .userId(null)
+                    .nickname("알수없음")
+                    .profileUrl("https://alog-profile-images.s3.ap-northeast-2.amazonaws.com/default_profile.png")
+                    .build();
+        }
+        else {
+            profile = userProfileService.getUserProfile(comment.getUserId());
+        }
         CommentResponseDTO.GetComment dto = CommentResponseDTO.GetComment.builder()
                 .commentId(comment.getCommentId())
                 .parentCommentId(
