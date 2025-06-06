@@ -28,7 +28,7 @@ spring:
       connection-timeout: 5s
       socket-timeout: 3s
     redis:
-      host: localhost
+      host: redis
       port: 6379
       database: 1
 
