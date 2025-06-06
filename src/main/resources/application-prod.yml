@@ -61,5 +61,5 @@ jwt:
 logging:
   level:
     org.springframework.cloud.openfeign: DEBUG
-    org.springframework.cache: INFO
-    org.springframework.data.redis: INFO
+    org.springframework.cache: DEBUG
+    org.springframework.data.redis: DEBUG
