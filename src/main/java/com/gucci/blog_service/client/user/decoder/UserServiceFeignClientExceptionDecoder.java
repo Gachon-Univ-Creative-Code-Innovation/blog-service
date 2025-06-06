@@ -4,9 +4,11 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class UserServiceFeignClientExceptionDecoder implements ErrorDecoder {
 	private final Logger logger = LoggerFactory.getLogger(UserServiceFeignClientExceptionDecoder.class);
 

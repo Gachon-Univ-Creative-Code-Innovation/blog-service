@@ -24,6 +24,9 @@ import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -57,6 +61,7 @@ public class PostService {
     private final S3Service s3Service;
 
     private final BlogEventProducer blogEventProducer;
+    private final Logger logger = LoggerFactory.getLogger(PostService.class);
   
     private final static Integer pageSize = 15;
 
@@ -153,6 +158,7 @@ public class PostService {
             savedTags = tagService.getTagNamesByPost(post);
             UserProfile userProfile = userProfileService.getUserProfile(userId);
 
+            log.debug("debug 카프카 전");
             // 임시 저장이 아닌 경우만 알림 발행
             blogEventProducer.publishNewPostEvent(
                     NewPostCreatedEvent.builder()
@@ -161,10 +167,13 @@ public class PostService {
                             .authorNickname(userProfile.getNickname())
                             .build()
             );
-        }
+            log.debug("debug 카프카 후");
 
+        }
+        log.debug("debug 인덱싱전");
         //elastic search에 인덱싱
         postSearchService.index(savedPost, savedPostDocument, savedTags);
+        log.debug("debug 인덱싱후");
 
         return savedPost;
     }
