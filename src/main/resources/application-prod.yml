@@ -49,9 +49,9 @@ aws:
 
 feign:
   user-service:
-    url : "http://user-service:8080" #${USER_SERVICE_URL}
+    url : "http://user-service:8080/api/user-service" #${USER_SERVICE_URL}
   matching-service:
-    url : "http://matching-service:8000"
+    url : "http://matching-service:8000/api/user-service"
 
 springdoc:
   swagger-ui:

@@ -108,7 +108,7 @@ public class CommentService {
             profile = UserProfile.builder()
                     .userId(null)
                     .nickname("알수없음")
-                    .profileUrl("https://alog-profile-images.s3.ap-northeast-2.amazonaws.com/default_profile.png")
+                    .profileUrl("https://alog-profile-images.s3.ap-northeast-2.amazonaws.com/default_profile.png") //기본 프로필
                     .build();
         }
         else {
