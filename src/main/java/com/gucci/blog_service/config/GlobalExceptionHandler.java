@@ -47,8 +47,9 @@ public class GlobalExceptionHandler {
      * 그 외 일반적인 비즈니스 예외나, 예상치 못한 예외를 처리하고 싶다면 아래와 같은 핸들러를 추가로 작성할 수 있습니다.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception ex) {
+    public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception e) {
         // 로그를 남기고, 500 서버 에러 응답을 돌려줄 수도 있습니다.
+        log.error("💥 서버 에러 발생: {}", e.getMessage(), e);
         ApiResponse<Void> response = ApiResponse.error(ErrorCode.FAIL);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
