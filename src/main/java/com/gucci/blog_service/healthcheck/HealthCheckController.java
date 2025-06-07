@@ -16,4 +16,9 @@ public class HealthCheckController {
     public String healthCheck() {
         return "Blog Service is up and running on port: " + environment.getProperty("local.server.port");
     }
+
+    @GetMapping("/test")
+    public String test() {
+        return "Blog Service Test Endpoint is working!";
+    }
 }
