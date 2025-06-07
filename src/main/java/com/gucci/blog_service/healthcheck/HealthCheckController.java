@@ -19,6 +19,6 @@ public class HealthCheckController {
 
     @GetMapping("/test")
     public String test() {
-        return "Blog Service Test Endpoint is working!";
+        return "Blog Service Test Endpoint is working!!";
     }
 }
