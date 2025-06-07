@@ -6,6 +6,3 @@ spring:
   profiles:
     active: cloud
 
-logging:
-  level:
-    org.springframework.boot.context.config: debug
