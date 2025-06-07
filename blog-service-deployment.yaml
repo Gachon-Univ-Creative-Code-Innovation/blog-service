@@ -16,6 +16,7 @@ spec:
       containers:
         - name: blog-service
           image: msj9965/alog-blog:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 8030
           env:
