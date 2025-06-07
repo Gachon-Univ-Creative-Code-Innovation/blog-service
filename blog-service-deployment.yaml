@@ -16,6 +16,7 @@ spec:
       containers:
         - name: blog-service
           image: msj9965/alog-blog:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 8030
           env:
@@ -80,3 +81,8 @@ spec:
                 secretKeyRef:
                   name: blog-app-secret
                   key: FEIGN_MATCHING_SERVICE_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: KAFKA_BOOTSTRAP_SERVERS
