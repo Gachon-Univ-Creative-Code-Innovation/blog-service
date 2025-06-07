@@ -80,3 +80,8 @@ spec:
                 secretKeyRef:
                   name: blog-app-secret
                   key: FEIGN_MATCHING_SERVICE_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: blog-app-secret
+                  key: KAFKA_BOOTSTRAP_SERVERS
