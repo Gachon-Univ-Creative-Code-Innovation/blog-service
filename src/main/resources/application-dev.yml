@@ -1,4 +1,7 @@
 spring:
+  cloud:
+    config:
+      enabled: false
   datasource:
     url: ${LOCAL_DB_URL}
     username: ${LOCAL_DB_USERNAME}

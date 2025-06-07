@@ -1,8 +1,8 @@
 spring:
   application:
     name: blog-service
-  config:
-    import: "optional:configserver:"
+#  config:
+#    import: "optional:configserver:"
   profiles:
     active: cloud
 
