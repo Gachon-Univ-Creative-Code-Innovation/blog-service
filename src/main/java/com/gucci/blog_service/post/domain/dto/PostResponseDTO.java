@@ -41,6 +41,7 @@ public class PostResponseDTO {
         String thumbnail;
         Long view;
         Long categoryCode;
+        String postType;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
     }
