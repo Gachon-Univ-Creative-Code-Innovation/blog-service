@@ -44,6 +44,7 @@ public class PostResponseConverter {
                 .view(post.getView())
                 .categoryCode(post.getCategory().getCategoryId())
                 .summary(post.getSummary())
+                .postType(post.getPostType().name())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
