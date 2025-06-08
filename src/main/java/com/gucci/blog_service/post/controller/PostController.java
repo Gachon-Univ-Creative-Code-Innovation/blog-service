@@ -37,21 +37,23 @@ public class PostController {
     /** 페이징 적용 안함 */
     @Operation(summary = "내 글 조회", description = "본인이 작성한 글을 조회합니다. (POST, MATCHING 에 쓴 글이 같이 조회됩니다)")
     @GetMapping()
-    public ApiResponse<List<PostResponseDTO.GetPost>> getMyPosts(
-            HttpServletRequest request
+    public ApiResponse<PostResponseDTO.GetPostList> getMyPosts(
+            HttpServletRequest request,
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다.", example = "0") @RequestParam(name = "page") int page
     ){
         String token = request.getHeader("Authorization");
-        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(token);
+        PostResponseDTO.GetPostList getPostList = postService.getMyPostList(token, page);
         return ApiResponse.success(getPostList);
     }
 
     /** 페이징 적용 안함 */
     @Operation(summary = "사용자 글 조회", description = "다른 사용자가 작성한 글을 조회합니다, (POST, MATCHING 에 쓴 글이 같이 조회됩니다)")
     @GetMapping("/user/{userId}")
-    public ApiResponse<List<PostResponseDTO.GetPost>> getUserPosts(
-            @Schema(description = "조회할 사용자의 userId", example = "0") @PathVariable Long userId
+    public ApiResponse<PostResponseDTO.GetPostList> getUserPosts(
+            @Schema(description = "조회할 사용자의 userId", example = "0") @PathVariable Long userId,
+            @Schema(description = "조회할 페이지 번호. 0부터 시작합니다.", example = "0") @RequestParam(name = "page") int page
     ) {
-        List<PostResponseDTO.GetPost> getPostList = postService.getMyPostList(userId);
+        PostResponseDTO.GetPostList getPostList = postService.getUserPostList(userId, page);
         return ApiResponse.success(getPostList);
     }
 

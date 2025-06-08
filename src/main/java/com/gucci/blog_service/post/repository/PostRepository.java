@@ -15,6 +15,8 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByUserId(Long userId);
+    Page<Post> findAllByUserId(Long userId, Pageable pageable);
+
     Optional<Post> findByParentPostId(Long parentPostId);
     Page<Post> findAllByPostTypeAndPostIdIn(PostType postType, List<Long> parentPostIds, Pageable page);
     Page<Post> findAllByCategoryAndIsDraftAndPostType(Category category, Boolean isDraft, PostType postType, Pageable page);
