@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
         configuration = UserServiceFeignConfig.class
 )
 public interface UserServiceAPI {
-    @GetMapping(value = "/follow/followers")
+    @GetMapping(value = "/follow/followees")
     UserServiceResponseDTO.UserFollowingIds getUserFollowingId(
             @RequestHeader("Authorization") String token
     );
