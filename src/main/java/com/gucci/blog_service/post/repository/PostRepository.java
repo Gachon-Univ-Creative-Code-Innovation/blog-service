@@ -18,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByUserId(Long userId, Pageable pageable);
 
     Optional<Post> findByParentPostId(Long parentPostId);
-    Page<Post> findAllByPostTypeAndPostIdIn(PostType postType, List<Long> parentPostIds, Pageable page);
+    Page<Post> findAllByPostTypeAndUserIdIn(PostType postType, List<Long> userId, Pageable page);
     Page<Post> findAllByCategoryAndIsDraftAndPostType(Category category, Boolean isDraft, PostType postType, Pageable page);
 
     @Query("""

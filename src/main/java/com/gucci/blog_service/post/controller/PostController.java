@@ -36,7 +36,7 @@ public class PostController {
 
     /** 페이징 적용 안함 */
     @Operation(summary = "내 글 조회", description = "본인이 작성한 글을 조회합니다. (POST, MATCHING 에 쓴 글이 같이 조회됩니다)")
-    @GetMapping()
+    @GetMapping("")
     public ApiResponse<PostResponseDTO.GetPostList> getMyPosts(
             HttpServletRequest request,
             @Schema(description = "조회할 페이지 번호. 0부터 시작합니다.", example = "0") @RequestParam(name = "page") int page

@@ -244,7 +244,7 @@ public class PostService {
         List<Long> followingUserIds = userServiceClient.getUserFollowingIds(token);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());//최신순 정렬
-        Page<Post> postPage = postRepository.findAllByPostTypeAndPostIdIn(PostType.POST, followingUserIds, pageable);
+        Page<Post> postPage = postRepository.findAllByPostTypeAndUserIdIn(PostType.POST, followingUserIds, pageable);
 
         //post로 dto만들기
         List<PostResponseDTO.GetPost> posts = postPage.stream()
