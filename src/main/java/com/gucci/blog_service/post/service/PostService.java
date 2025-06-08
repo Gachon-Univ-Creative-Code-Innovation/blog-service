@@ -22,6 +22,7 @@ import com.gucci.blog_service.userProfileCache.domain.UserProfile;
 import com.gucci.blog_service.userProfileCache.service.UserProfileService;
 import com.gucci.common.exception.CustomException;
 import com.gucci.common.exception.ErrorCode;
+import com.gucci.common.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -179,35 +180,44 @@ public class PostService {
     }
 
     /** 본인 글 조회 paging 적용 안함*/
-    public List<PostResponseDTO.GetPost> getMyPostList(String token) {
+    public PostResponseDTO.GetPostList getMyPostList(String token, int page) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
         Long userId = jwtTokenHelper.getUserIdFromToken(token);
 
-        List<Post> postList = postRepository.findAllByUserId(userId);
+        Page<Post> postPage = postRepository.findAllByUserId(userId, pageable);
         UserProfile profile = userProfileService.getUserProfile(userId);
 
-        return postList.stream().map(
-                post -> {
+        // DTO 변환
+        List<PostResponseDTO.GetPost> dtos = postPage.stream()
+                .map(post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
                     Integer commentCount = commentRefService.getCommentCount(post);
-
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
-                }
-        ).toList();
+                })
+                .toList();
+
+        // 페이징 정보와 DTO 리스트를 묶어서 반환
+        return PostResponseConverter.toGetPostList(postPage, dtos);
     }
 
     /** 사용자 글 조회 paging 적용 안함*/
-    public List<PostResponseDTO.GetPost> getMyPostList(Long userId) {
-        List<Post> postList = postRepository.findAllByUserId(userId);
+    public PostResponseDTO.GetPostList getUserPostList(Long userId, int page) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
 
-        return postList.stream().map(
-                post -> {
+        Page<Post> postPage = postRepository.findAllByUserId(userId, pageable);
+        UserProfile profile = userProfileService.getUserProfile(userId);
+
+        // DTO 변환
+        List<PostResponseDTO.GetPost> dtos = postPage.stream()
+                .map(post -> {
                     String thumbnail = s3Service.getPresignedUrl(post.getThumbnail());
-                    UserProfile profile = userProfileService.getUserProfile(post.getUserId());
                     Integer commentCount = commentRefService.getCommentCount(post);
-
                     return PostResponseConverter.toGetPostDto(post, thumbnail, profile, commentCount);
-                }
-        ).toList();
+                })
+                .toList();
+
+        // 페이징 정보와 DTO 리스트를 묶어서 반환
+        return PostResponseConverter.toGetPostList(postPage, dtos);
     }
 
     /** 게시글 하나 상세조회  */
